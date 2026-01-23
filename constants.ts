@@ -10,7 +10,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     category: TaskCategory.PRODUCTIVITY,
     frequency: TaskFrequency.DAILY,
     time: '06:00',
-    color: 'bg-sky-100 border-sky-200 text-sky-800 dark:text-sky-200'
+    color: 'bg-cyan-500 border-cyan-400 text-white shadow-lg shadow-cyan-500/20'
   },
   {
     id: 'd-2',
@@ -19,52 +19,71 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     category: TaskCategory.SPIRITUAL,
     frequency: TaskFrequency.DAILY,
     time: '06:00',
-    color: 'bg-purple-100 border-purple-200 text-purple-800 dark:text-purple-200'
+    color: 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/20'
   },
   {
     id: 'd-3',
     title: 'Pushup Workout',
     description: '6:15 AM - 6:30 AM: 50-80 pushups',
-    category: TaskCategory.FITNESS,
+    category: TaskCategory.MY_WORKOUT,
     frequency: TaskFrequency.DAILY,
     time: '06:15',
-    color: 'bg-orange-100 border-orange-200 text-orange-800 dark:text-orange-200'
+    color: 'bg-orange-500 border-orange-400 text-white shadow-lg shadow-orange-500/20'
   },
   {
-    id: 'd-4',
+    id: 'd-plan',
     title: 'Plan the Day',
     description: '6:30 AM - 7:00 AM: Focus on priorities',
     category: TaskCategory.PRODUCTIVITY,
     frequency: TaskFrequency.DAILY,
     time: '06:30',
-    color: 'bg-amber-100 border-amber-200 text-amber-800 dark:text-amber-200'
+    color: 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20'
   },
   {
-    id: 'd-5',
+    id: 'd-god',
     title: 'Time with God',
     description: '7:00 AM - 7:30 AM: Quiet reflection',
     category: TaskCategory.SPIRITUAL,
     frequency: TaskFrequency.DAILY,
     time: '07:00',
-    color: 'bg-rose-100 border-rose-200 text-rose-800 dark:text-rose-200'
+    color: 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-lg shadow-fuchsia-600/20'
+  },
+  // Pushups Split into Evening
+  {
+    id: 'd-pushups-1',
+    title: 'Pushups & Core',
+    description: '7:00 PM: Second set of 50',
+    category: TaskCategory.MY_WORKOUT,
+    frequency: TaskFrequency.DAILY,
+    time: '19:00',
+    color: 'bg-orange-500 border-orange-400 text-white shadow-lg shadow-orange-500/20'
   },
   {
-    id: 'd-6',
+    id: 'd-pushups-2',
+    title: 'Pushups Intensity',
+    description: '8:00 PM: Third set to failure',
+    category: TaskCategory.MY_WORKOUT,
+    frequency: TaskFrequency.DAILY,
+    time: '20:00',
+    color: 'bg-red-500 border-red-400 text-white shadow-lg shadow-red-500/20'
+  },
+  {
+    id: 'd-read',
     title: 'Journaling & Reading',
     description: '10:00 PM: Bible or book study',
     category: TaskCategory.SPIRITUAL,
     frequency: TaskFrequency.DAILY,
     time: '22:00',
-    color: 'bg-indigo-100 border-indigo-200 text-indigo-800 dark:text-indigo-200'
+    color: 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/20'
   },
   {
-    id: 'd-7',
+    id: 'd-sleep',
     title: 'Sleep',
     description: '11:00 PM: Rest for recovery',
     category: TaskCategory.HEALTH,
     frequency: TaskFrequency.DAILY,
     time: '23:00',
-    color: 'bg-slate-100 border-slate-200 text-slate-800 dark:text-slate-200'
+    color: 'bg-slate-700 border-slate-600 text-slate-100 shadow-lg shadow-slate-700/20'
   },
 
   // WEEKLY
@@ -72,28 +91,28 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     id: 'w-gym-tue',
     title: 'Gym Session',
     description: 'Tuesday intense workout',
-    category: TaskCategory.FITNESS,
+    category: TaskCategory.MY_WORKOUT,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [2],
-    color: 'bg-emerald-100 border-emerald-200 text-emerald-800 dark:text-emerald-200'
+    color: 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/20'
   },
   {
     id: 'w-gym-thu',
     title: 'Gym Session',
     description: 'Thursday intense workout',
-    category: TaskCategory.FITNESS,
+    category: TaskCategory.MY_WORKOUT,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [4],
-    color: 'bg-emerald-100 border-emerald-200 text-emerald-800 dark:text-emerald-200'
+    color: 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/20'
   },
   {
     id: 'w-gym-fri',
     title: 'Gym Session',
     description: 'Friday intense workout',
-    category: TaskCategory.FITNESS,
+    category: TaskCategory.MY_WORKOUT,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [5],
-    color: 'bg-emerald-100 border-emerald-200 text-emerald-800 dark:text-emerald-200'
+    color: 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/20'
   },
   {
     id: 'w-calls',
@@ -102,17 +121,17 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     category: TaskCategory.PRODUCTIVITY,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [2, 3, 4],
-    color: 'bg-cyan-100 border-cyan-200 text-cyan-800 dark:text-cyan-200'
+    color: 'bg-sky-500 border-sky-400 text-white shadow-lg shadow-sky-500/20'
   },
   {
     id: 'w-jog',
     title: 'Saturday Jog',
     description: '7:00 AM / 8:00 AM outdoor run',
-    category: TaskCategory.FITNESS,
+    category: TaskCategory.MY_WORKOUT,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [6],
     time: '07:00',
-    color: 'bg-lime-100 border-lime-200 text-lime-800 dark:text-lime-200'
+    color: 'bg-lime-600 border-lime-500 text-white shadow-lg shadow-lime-600/20'
   },
   {
     id: 'w-smoothie',
@@ -121,7 +140,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     category: TaskCategory.HEALTH,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [6],
-    color: 'bg-yellow-50 border-yellow-100 text-yellow-700 dark:text-yellow-200'
+    color: 'bg-yellow-500 border-yellow-400 text-white shadow-lg shadow-yellow-500/20'
   },
   {
     id: 'w-banana',
@@ -130,7 +149,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     category: TaskCategory.HEALTH,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [0],
-    color: 'bg-yellow-100 border-yellow-200 text-yellow-800 dark:text-yellow-200'
+    color: 'bg-yellow-500 border-yellow-400 text-white shadow-lg shadow-yellow-500/20'
   },
   {
     id: 'w-haircut',
@@ -139,7 +158,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     category: TaskCategory.GROOMING,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [5, 6],
-    color: 'bg-rose-100 border-rose-200 text-rose-800 dark:text-rose-200'
+    color: 'bg-pink-600 border-pink-500 text-white shadow-lg shadow-pink-600/20'
   },
   {
     id: 'w-save',
@@ -148,7 +167,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     category: TaskCategory.FINANCIAL,
     frequency: TaskFrequency.WEEKLY,
     daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-    color: 'bg-green-100 border-green-200 text-green-800 dark:text-green-200'
+    color: 'bg-green-600 border-green-500 text-white shadow-lg shadow-green-600/20'
   },
 
   // BIWEEKLY
@@ -158,7 +177,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     description: 'Restock room water supply',
     category: TaskCategory.HOUSEHOLD,
     frequency: TaskFrequency.BIWEEKLY,
-    color: 'bg-sky-100 border-sky-200 text-sky-800 dark:text-sky-200'
+    color: 'bg-teal-600 border-teal-500 text-white shadow-lg shadow-teal-600/20'
   },
   {
     id: 'bw-wash',
@@ -166,7 +185,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     description: 'Laundry day for the fortnight',
     category: TaskCategory.HOUSEHOLD,
     frequency: TaskFrequency.BIWEEKLY,
-    color: 'bg-stone-100 border-stone-200 text-stone-800 dark:text-stone-200'
+    color: 'bg-stone-600 border-stone-500 text-white shadow-lg shadow-stone-600/20'
   },
 
   // MONTHLY
@@ -176,7 +195,7 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     description: 'Total saved > 15,000 Naira',
     category: TaskCategory.FINANCIAL,
     frequency: TaskFrequency.MONTHLY,
-    color: 'bg-green-200 border-green-300 text-green-900 dark:text-green-100'
+    color: 'bg-green-700 border-green-600 text-white shadow-lg shadow-green-700/20'
   },
   {
     id: 'm-fragrance',
@@ -184,6 +203,6 @@ export const DEFAULT_TASKS: TaskDefinition[] = [
     description: 'Budget 10k for new set',
     category: TaskCategory.GROOMING,
     frequency: TaskFrequency.MONTHLY,
-    color: 'bg-fuchsia-100 border-fuchsia-200 text-fuchsia-800 dark:text-fuchsia-200'
+    color: 'bg-fuchsia-700 border-fuchsia-600 text-white shadow-lg shadow-fuchsia-700/20'
   }
 ];

@@ -179,8 +179,21 @@ const App: React.FC = () => {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button
-              aria-label="Notifications"
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95 transition-all shadow-inner"
+              aria-label="Enable Notifications & Test Alarm"
+              onClick={() => {
+                import('./components/NotificationManager').then(({ triggerAlarm }) => {
+                  if ('Notification' in window && Notification.permission !== 'granted') {
+                    Notification.requestPermission().then(permission => {
+                      if (permission === 'granted') {
+                        triggerAlarm('Notifications Active', 'Alarms are now enabled and tested!');
+                      }
+                    });
+                  } else {
+                    triggerAlarm('Alarm Test', 'This is a test of the notification sound.');
+                  }
+                });
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95 transition-all shadow-inner hover:bg-slate-200 dark:hover:bg-slate-700"
             >
               <Bell size={20} />
             </button>
@@ -206,8 +219,8 @@ const App: React.FC = () => {
 
           {nextTaskInfo && (
             <div className={`flex flex-col items-center justify-center gap-1 px-6 py-4 rounded-3xl border shadow-lg transition-all transform hover:scale-105 ${nextTaskInfo.isSoon
-                ? 'bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400 text-white animate-pulse shadow-rose-500/30'
-                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
+              ? 'bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400 text-white animate-pulse shadow-rose-500/30'
+              : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
               }`}>
               <div className="flex items-center gap-2 mb-1">
                 <Timer size={18} className={nextTaskInfo.isSoon ? 'text-white' : 'text-indigo-500'} />
@@ -295,30 +308,60 @@ const App: React.FC = () => {
       <h1 className="text-3xl font-black mb-1 dark:text-white tracking-tight">Task Planner</h1>
       <p className="text-slate-400 dark:text-slate-500 mb-8 font-medium text-sm">Organize your long-term success</p>
 
-      {Object.values(TaskFrequency).map(freq => (
-        <section key={freq} className="mb-12">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-9 h-9 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shadow-sm">
-              <ListTodo size={18} />
-            </div>
-            <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 capitalize">{freq.toLowerCase()} Habits</h2>
+      {/* Special Section for My Workout */}
+      <section className="mb-12">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-9 h-9 rounded-2xl bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-300 flex items-center justify-center shadow-sm">
+            <TrendingUp size={18} />
           </div>
-          <div className="space-y-3">
-            {DEFAULT_TASKS.filter(t => t.frequency === freq).map(task => (
-              <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
-                <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
-                <div className="flex-1">
+          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">My Workout</h2>
+        </div>
+        <div className="space-y-3">
+          {DEFAULT_TASKS.filter(t => t.category === TaskCategory.MY_WORKOUT).map(task => (
+            <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+              <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
                   <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight">{task.title}</h4>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p>
+                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{task.frequency}</span>
                 </div>
-                <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 rounded-xl">
-                  {task.category}
-                </div>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p>
               </div>
-            ))}
-          </div>
-        </section>
-      ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Standard Sections (excluding My Workout) */}
+      {Object.values(TaskFrequency).map(freq => {
+        const tasks = DEFAULT_TASKS.filter(t => t.frequency === freq && t.category !== TaskCategory.MY_WORKOUT);
+        if (tasks.length === 0) return null;
+
+        return (
+          <section key={freq} className="mb-12">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-9 h-9 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shadow-sm">
+                <ListTodo size={18} />
+              </div>
+              <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 capitalize">{freq.toLowerCase()} Habits</h2>
+            </div>
+            <div className="space-y-3">
+              {tasks.map(task => (
+                <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                  <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight">{task.title}</h4>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p>
+                  </div>
+                  <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                    {task.category}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </main>
   );
 

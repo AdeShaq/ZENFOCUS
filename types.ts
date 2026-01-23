@@ -13,7 +13,8 @@ export enum TaskCategory {
   HEALTH = 'Health',
   FINANCIAL = 'Financial',
   GROOMING = 'Grooming',
-  HOUSEHOLD = 'Household'
+  HOUSEHOLD = 'Household',
+  MY_WORKOUT = 'My Workout'
 }
 
 export interface TaskDefinition {
