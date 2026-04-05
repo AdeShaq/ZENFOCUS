@@ -9,18 +9,23 @@ import {
   ListTodo,
   Sun,
   Moon,
-  Timer
+  Timer,
+  FileText,
+  Wallet
 } from 'lucide-react';
 import { format, parse, differenceInSeconds, isAfter, startOfToday, addDays } from 'date-fns';
 import { CalendarStrip } from './components/CalendarStrip';
 import { TaskCard } from './components/TaskCard';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationManager } from './components/NotificationManager';
-import { DEFAULT_TASKS } from './constants';
+import { NotesView } from './components/NotesView';
+import { FinancesView } from './components/FinancesView';
 import { filterTasksForDate, formatDateKey, requestNotificationPermission, sendNotification } from './utils';
-import { UserProgress, TaskCategory, TaskFrequency, TaskDefinition } from './types';
+import { UserProgress, TaskCategory, TaskFrequency, TaskDefinition, Note, FinanceEntry } from './types';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { APRIL_2026_TASKS, APRIL_2026_FINANCES, INITIAL_NOTES } from './data/april2026';
 
-type Tab = 'Today' | 'Planner' | 'Stats';
+type Tab = 'Today' | 'Planner' | 'Notes' | 'Finances' | 'Stats';
 
 const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<Tab>('Today');
@@ -31,10 +36,12 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('zenfocus_theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
-  const [progress, setProgress] = useState<UserProgress>(() => {
-    const saved = localStorage.getItem('zenfocus_progress');
-    return saved ? JSON.parse(saved) : { completedTaskIds: {} };
-  });
+  
+  // Storage Hooks
+  const [tasks, setTasks] = useLocalStorage<TaskDefinition[]>('zenfocus_tasks', APRIL_2026_TASKS);
+  const [finances, setFinances] = useLocalStorage<FinanceEntry[]>('zenfocus_finances', APRIL_2026_FINANCES);
+  const [notes, setNotes] = useLocalStorage<Note[]>('zenfocus_notes', INITIAL_NOTES);
+  const [progress, setProgress] = useLocalStorage<UserProgress>('zenfocus_progress', { completedTaskIds: {}, missedTaskReasons: {}, eodReviews: {} });
 
   // Track sent notifications
   const [sentNotifications] = useState<Set<string>>(new Set());
@@ -59,21 +66,16 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  // Persist progress to localStorage
-  useEffect(() => {
-    localStorage.setItem('zenfocus_progress', JSON.stringify(progress));
-  }, [progress]);
-
   // Alarm/Notification Logic
   useEffect(() => {
     requestNotificationPermission();
 
-    const checkInterval = setInterval(() => {
+      const checkInterval = setInterval(() => {
       const now = new Date();
       const currentHHmm = format(now, 'HH:mm');
       const todayDateKey = formatDateKey(now);
 
-      const todayTasks = filterTasksForDate(DEFAULT_TASKS, now);
+      const todayTasks = filterTasksForDate(tasks, now);
       const tasksToNotify = todayTasks.filter(t => t.time === currentHHmm);
 
       tasksToNotify.forEach(task => {
@@ -94,13 +96,13 @@ const App: React.FC = () => {
   const dateKey = formatDateKey(selectedDate);
 
   const todaysTasks = useMemo(() => {
-    const filtered = filterTasksForDate(DEFAULT_TASKS, selectedDate);
+    const filtered = filterTasksForDate(tasks, selectedDate);
     if (activeCategory === 'All') return filtered;
     return filtered.filter(t => t.category === activeCategory);
-  }, [selectedDate, activeCategory]);
+  }, [selectedDate, activeCategory, tasks]);
 
   const completedToday = progress.completedTaskIds[dateKey] || [];
-  const totalTasksTodayCount = filterTasksForDate(DEFAULT_TASKS, selectedDate).length;
+  const totalTasksTodayCount = filterTasksForDate(tasks, selectedDate).length;
   const completionPercentage = totalTasksTodayCount > 0
     ? Math.round((completedToday.length / totalTasksTodayCount) * 100)
     : 0;
@@ -108,7 +110,7 @@ const App: React.FC = () => {
   // Next Task Countdown Logic
   const nextTaskInfo = useMemo(() => {
     const today = startOfToday();
-    const tasksWithTime = filterTasksForDate(DEFAULT_TASKS, currentTime)
+    const tasksWithTime = filterTasksForDate(tasks, currentTime)
       .filter(t => t.time)
       .map(t => ({
         ...t,
@@ -299,6 +301,59 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* EOD Review Section */}
+        {todaysTasks.length > 0 && currentTab === 'Today' && (
+          <div className="mt-12 bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-black/5 dark:border-slate-700/50 shadow-sm">
+            <h3 className="font-black text-xl mb-4 dark:text-white flex items-center gap-2">
+              <Moon size={20} className="text-indigo-500" /> End of Day Review
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Missed Tasks Tracker</p>
+              {todaysTasks.filter(t => !completedToday.includes(t.id)).map(task => {
+                const reason = progress.missedTaskReasons?.[dateKey]?.[task.id] || '';
+                return (
+                  <div key={task.id} className="bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-rose-100 dark:border-rose-900/30">
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2 truncate px-1">✕ {task.title}</div>
+                    <input 
+                      type="text"
+                      placeholder="Reason for missing this?"
+                      value={reason}
+                      onChange={e => setProgress(prev => ({
+                        ...prev,
+                        missedTaskReasons: {
+                          ...prev.missedTaskReasons,
+                          [dateKey]: {
+                            ...(prev.missedTaskReasons?.[dateKey] || {}),
+                            [task.id]: e.target.value
+                          }
+                        }
+                      }))}
+                      className="w-full bg-white dark:bg-slate-800 border-none rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 outline-none"
+                    />
+                  </div>
+                );
+              })}
+              {todaysTasks.filter(t => !completedToday.includes(t.id)).length === 0 && (
+                <div className="text-sm font-medium text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+                  🎉 All tasks completed today! Amazing job!
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Daily Summary</p>
+            <textarea
+              placeholder="How did today go?"
+              value={progress.eodReviews?.[dateKey] || ''}
+              onChange={e => setProgress(prev => ({
+                ...prev,
+                eodReviews: { ...prev.eodReviews, [dateKey]: e.target.value }
+              }))}
+              className="w-full h-24 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+            />
+          </div>
+        )}
       </main>
     </>
   );
@@ -307,6 +362,36 @@ const App: React.FC = () => {
     <main className="flex-1 overflow-y-auto px-6 pt-12 no-scrollbar pb-32">
       <h1 className="text-3xl font-black mb-1 dark:text-white tracking-tight">Task Planner</h1>
       <p className="text-slate-400 dark:text-slate-500 mb-8 font-medium text-sm">Organize your long-term success</p>
+
+      {/* Weekly Timetable */}
+      <section className="mb-12">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-9 h-9 rounded-2xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex items-center justify-center shadow-sm">
+            <CalendarIcon size={18} />
+          </div>
+          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Weekly Classes</h2>
+        </div>
+        <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((day, idx) => {
+            const dayTasks = tasks.filter(t => t.category === TaskCategory.ACADEMICS && t.daysOfWeek?.includes(idx + 1)).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
+            if (dayTasks.length === 0) return null;
+            return (
+              <div key={day} className="min-w-[180px] bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-black/5 dark:border-slate-700/50 transition-all hover:scale-[1.02]">
+                <h3 className="font-black text-slate-400 mb-3 uppercase tracking-widest text-xs">{day}</h3>
+                <div className="space-y-2">
+                  {dayTasks.map(t => (
+                    <div key={t.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+                      <div className="text-[10px] font-black text-blue-600 dark:text-blue-400 mb-0.5">{t.time}</div>
+                      <div className="font-bold text-sm leading-tight text-slate-800 dark:text-white mb-1">{t.title}</div>
+                      <div className="text-[10px] font-medium text-slate-500 line-clamp-2">{t.description}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Special Section for My Workout */}
       <section className="mb-12">
@@ -317,7 +402,7 @@ const App: React.FC = () => {
           <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">My Workout</h2>
         </div>
         <div className="space-y-3">
-          {DEFAULT_TASKS.filter(t => t.category === TaskCategory.MY_WORKOUT).map(task => (
+          {tasks.filter(t => t.category === TaskCategory.MY_WORKOUT).map(task => (
             <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
               <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
               <div className="flex-1">
@@ -334,8 +419,8 @@ const App: React.FC = () => {
 
       {/* Standard Sections (excluding My Workout) */}
       {Object.values(TaskFrequency).map(freq => {
-        const tasks = DEFAULT_TASKS.filter(t => t.frequency === freq && t.category !== TaskCategory.MY_WORKOUT);
-        if (tasks.length === 0) return null;
+        const freqTasks = tasks.filter(t => t.frequency === freq && t.category !== TaskCategory.MY_WORKOUT);
+        if (freqTasks.length === 0) return null;
 
         return (
           <section key={freq} className="mb-12">
@@ -346,7 +431,7 @@ const App: React.FC = () => {
               <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 capitalize">{freq.toLowerCase()} Habits</h2>
             </div>
             <div className="space-y-3">
-              {tasks.map(task => (
+              {freqTasks.map(task => (
                 <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
                   <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
                   <div className="flex-1">
@@ -409,36 +494,52 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative overflow-hidden">
+    <div className="flex flex-col h-screen max-w-md mx-auto bg-[#F2F2F7] dark:bg-slate-950 transition-colors duration-500 relative overflow-hidden">
       {currentTab === 'Today' && renderToday()}
       {currentTab === 'Planner' && renderPlanner()}
+      {currentTab === 'Notes' && <NotesView notes={notes} setNotes={setNotes} />}
+      {currentTab === 'Finances' && <FinancesView finances={finances} setFinances={setFinances} />}
       {currentTab === 'Stats' && renderStats()}
 
       <PWAInstallPrompt />
       <NotificationManager />
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-100 dark:border-slate-800/50 px-8 py-5 z-20">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-100 dark:border-slate-800/50 px-2 sm:px-6 py-4 z-20">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button
             onClick={() => setCurrentTab('Today')}
             className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Today' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
           >
             <LayoutGrid size={22} className={currentTab === 'Today' ? 'stroke-[2.5px]' : 'stroke-2'} />
-            <span className="text-[10px] font-black uppercase tracking-tighter">Today</span>
+            <span className="text-[9px] font-black uppercase tracking-tighter">Today</span>
           </button>
           <button
             onClick={() => setCurrentTab('Planner')}
             className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Planner' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
           >
             <CalendarIcon size={22} className={currentTab === 'Planner' ? 'stroke-[2.5px]' : 'stroke-2'} />
-            <span className="text-[10px] font-black uppercase tracking-tighter">Planner</span>
+            <span className="text-[9px] font-black uppercase tracking-tighter">Planner</span>
+          </button>
+          <button
+            onClick={() => setCurrentTab('Notes')}
+            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Notes' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
+          >
+            <FileText size={22} className={currentTab === 'Notes' ? 'stroke-[2.5px]' : 'stroke-2'} />
+            <span className="text-[9px] font-black uppercase tracking-tighter">Notes</span>
+          </button>
+          <button
+            onClick={() => setCurrentTab('Finances')}
+            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Finances' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
+          >
+            <Wallet size={22} className={currentTab === 'Finances' ? 'stroke-[2.5px]' : 'stroke-2'} />
+            <span className="text-[9px] font-black uppercase tracking-tighter">Finances</span>
           </button>
           <button
             onClick={() => setCurrentTab('Stats')}
             className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Stats' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
           >
             <TrendingUp size={22} className={currentTab === 'Stats' ? 'stroke-[2.5px]' : 'stroke-2'} />
-            <span className="text-[10px] font-black uppercase tracking-tighter">Stats</span>
+            <span className="text-[9px] font-black uppercase tracking-tighter">Stats</span>
           </button>
         </div>
       </nav>

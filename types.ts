@@ -14,7 +14,9 @@ export enum TaskCategory {
   FINANCIAL = 'Financial',
   GROOMING = 'Grooming',
   HOUSEHOLD = 'Household',
-  MY_WORKOUT = 'My Workout'
+  MY_WORKOUT = 'My Workout',
+  ACADEMICS = 'Academics',
+  RELATIONSHIPS = 'Relationships'
 }
 
 export interface TaskDefinition {
@@ -31,4 +33,24 @@ export interface TaskDefinition {
 
 export interface UserProgress {
   completedTaskIds: Record<string, string[]>; // Date key (YYYY-MM-DD) -> Array of completed Task IDs
+  missedTaskReasons: Record<string, Record<string, string>>; // Date key -> Task ID -> Reason string
+  eodReviews: Record<string, string>; // Date key -> Review text
+}
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  dateCreated: string;
+  lastUpdated: string;
+}
+
+export interface FinanceEntry {
+  id: string;
+  title: string;
+  amount: number;
+  type: 'income' | 'expense' | 'debt' | 'saving';
+  date: string; // ISO date string
+  status: 'Expected' | 'Confirmed' | 'Pending' | 'Paid';
+  notes?: string;
 }
