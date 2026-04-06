@@ -2,6 +2,7 @@
 import React from 'react';
 import { Check, Clock, Calendar } from 'lucide-react';
 import { TaskDefinition } from '../types';
+import { formatTime12Hour } from '../utils';
 
 interface TaskCardProps {
   task: TaskDefinition;
@@ -24,7 +25,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isCompleted, onToggle 
             </span>
             {task.time && (
               <span className="flex items-center gap-1 text-[10px] font-black opacity-60">
-                <Clock size={12} className="stroke-[2.5px]" /> {task.time}
+                <Clock size={12} className="stroke-[2.5px]" /> {formatTime12Hour(task.time)}
               </span>
             )}
           </div>

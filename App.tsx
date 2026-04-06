@@ -20,7 +20,7 @@ import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationManager } from './components/NotificationManager';
 import { NotesView } from './components/NotesView';
 import { FinancesView } from './components/FinancesView';
-import { filterTasksForDate, formatDateKey, requestNotificationPermission, sendNotification } from './utils';
+import { filterTasksForDate, formatDateKey, requestNotificationPermission, sendNotification, formatTime12Hour } from './utils';
 import { UserProgress, TaskCategory, TaskFrequency, TaskDefinition, Note, FinanceEntry } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { APRIL_2026_TASKS, APRIL_2026_FINANCES, INITIAL_NOTES } from './data/april2026';
@@ -164,7 +164,7 @@ const App: React.FC = () => {
 
   const renderToday = () => (
     <>
-      <header className="px-6 pt-10 pb-4 bg-white dark:bg-slate-900 transition-colors duration-300 rounded-b-[3rem] shadow-sm">
+      <header className="px-6 pt-10 pb-4 bg-stone-50 dark:bg-slate-900 transition-colors duration-300 rounded-b-[3rem] shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <div>
             <h1 className="text-2xl font-bold tracking-tight dark:text-white">Hi, Xeno 👋</h1>
@@ -176,7 +176,7 @@ const App: React.FC = () => {
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               aria-label="Toggle Theme"
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all active:scale-95 shadow-inner"
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all active:scale-95 shadow-inner"
             >
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -195,13 +195,13 @@ const App: React.FC = () => {
                   }
                 });
               }}
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95 transition-all shadow-inner hover:bg-slate-200 dark:hover:bg-slate-700"
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95 transition-all shadow-inner hover:bg-stone-300 dark:hover:bg-slate-700"
             >
               <Bell size={20} />
             </button>
             <button
               aria-label="Profile"
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden active:scale-95 transition-all shadow-inner border border-black/5 dark:border-white/5"
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 overflow-hidden active:scale-95 transition-all shadow-inner border border-black/5 dark:border-white/5"
             >
               <img src="https://picsum.photos/seed/xeno/100" alt="Avatar" className="w-full h-full object-cover" />
             </button>
@@ -222,7 +222,7 @@ const App: React.FC = () => {
           {nextTaskInfo && (
             <div className={`flex flex-col items-center justify-center gap-1 px-6 py-4 rounded-3xl border shadow-lg transition-all transform hover:scale-105 ${nextTaskInfo.isSoon
               ? 'bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400 text-white animate-pulse shadow-rose-500/30'
-              : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
+              : 'bg-stone-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'
               }`}>
               <div className="flex items-center gap-2 mb-1">
                 <Timer size={18} className={nextTaskInfo.isSoon ? 'text-white' : 'text-indigo-500'} />
@@ -268,7 +268,7 @@ const App: React.FC = () => {
               onClick={() => setActiveCategory(cat)}
               className={`px-5 py-2.5 rounded-2xl whitespace-nowrap text-xs font-bold transition-all duration-200 border ${activeCategory === cat
                 ? 'bg-slate-900 dark:bg-indigo-500 text-white border-transparent shadow-lg'
-                : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-700 hover:border-slate-300'
+                : 'bg-stone-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-700 hover:border-slate-300'
                 }`}
             >
               {cat}
@@ -293,8 +293,8 @@ const App: React.FC = () => {
               />
             ))
           ) : (
-            <div className="text-center py-12 px-6 bg-white/40 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+            <div className="text-center py-12 px-6 bg-stone-50/40 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+              <div className="w-16 h-16 bg-stone-200 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
                 <CalendarIcon size={32} />
               </div>
               <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Nothing scheduled for this day!</p>
@@ -304,7 +304,7 @@ const App: React.FC = () => {
 
         {/* EOD Review Section */}
         {todaysTasks.length > 0 && currentTab === 'Today' && (
-          <div className="mt-12 bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-black/5 dark:border-slate-700/50 shadow-sm">
+          <div className="mt-12 bg-stone-50 dark:bg-slate-800 p-6 rounded-[2rem] border border-black/5 dark:border-slate-700/50 shadow-sm">
             <h3 className="font-black text-xl mb-4 dark:text-white flex items-center gap-2">
               <Moon size={20} className="text-indigo-500" /> End of Day Review
             </h3>
@@ -314,7 +314,7 @@ const App: React.FC = () => {
               {todaysTasks.filter(t => !completedToday.includes(t.id)).map(task => {
                 const reason = progress.missedTaskReasons?.[dateKey]?.[task.id] || '';
                 return (
-                  <div key={task.id} className="bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-rose-100 dark:border-rose-900/30">
+                  <div key={task.id} className="bg-stone-100 dark:bg-slate-900 p-3 rounded-2xl border border-rose-100 dark:border-rose-900/30">
                     <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2 truncate px-1">✕ {task.title}</div>
                     <input 
                       type="text"
@@ -350,7 +350,7 @@ const App: React.FC = () => {
                 ...prev,
                 eodReviews: { ...prev.eodReviews, [dateKey]: e.target.value }
               }))}
-              className="w-full h-24 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+              className="w-full h-24 bg-stone-100 dark:bg-slate-900 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
             />
           </div>
         )}
@@ -376,12 +376,12 @@ const App: React.FC = () => {
             const dayTasks = tasks.filter(t => t.category === TaskCategory.ACADEMICS && t.daysOfWeek?.includes(idx + 1)).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
             if (dayTasks.length === 0) return null;
             return (
-              <div key={day} className="min-w-[180px] bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-black/5 dark:border-slate-700/50 transition-all hover:scale-[1.02]">
+              <div key={day} className="min-w-[180px] bg-[#F9F9F9] dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-black/5 dark:border-slate-700/50 transition-all hover:scale-[1.02]">
                 <h3 className="font-black text-slate-400 mb-3 uppercase tracking-widest text-xs">{day}</h3>
                 <div className="space-y-2">
                   {dayTasks.map(t => (
-                    <div key={t.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl">
-                      <div className="text-[10px] font-black text-blue-600 dark:text-blue-400 mb-0.5">{t.time}</div>
+                    <div key={t.id} className="p-3 bg-stone-200 dark:bg-slate-900 rounded-2xl">
+                      <div className="text-[10px] font-black text-blue-600 dark:text-blue-400 mb-0.5">{t.time ? formatTime12Hour(t.time) : ''}</div>
                       <div className="font-bold text-sm leading-tight text-slate-800 dark:text-white mb-1">{t.title}</div>
                       <div className="text-[10px] font-medium text-slate-500 line-clamp-2">{t.description}</div>
                     </div>
@@ -403,12 +403,12 @@ const App: React.FC = () => {
         </div>
         <div className="space-y-3">
           {tasks.filter(t => t.category === TaskCategory.MY_WORKOUT).map(task => (
-            <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+            <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
               <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight">{task.title}</h4>
-                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{task.frequency}</span>
+                  <span className="text-[10px] font-bold text-slate-400 bg-stone-200 dark:bg-slate-700 px-2 py-0.5 rounded-full">{task.frequency}</span>
                 </div>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p>
               </div>
@@ -432,13 +432,13 @@ const App: React.FC = () => {
             </div>
             <div className="space-y-3">
               {freqTasks.map(task => (
-                <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
                   <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
                   <div className="flex-1">
                     <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight">{task.title}</h4>
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p>
                   </div>
-                  <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                  <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2.5 py-1.5 bg-stone-200 dark:bg-slate-900 rounded-xl">
                     {task.category}
                   </div>
                 </div>
@@ -494,7 +494,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-[#F2F2F7] dark:bg-slate-950 transition-colors duration-500 relative overflow-hidden">
+    <div className="flex flex-col h-screen max-w-md mx-auto bg-stone-200 dark:bg-slate-950 transition-colors duration-500 relative overflow-hidden">
       {currentTab === 'Today' && renderToday()}
       {currentTab === 'Planner' && renderPlanner()}
       {currentTab === 'Notes' && <NotesView notes={notes} setNotes={setNotes} />}

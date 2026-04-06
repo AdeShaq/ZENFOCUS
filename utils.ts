@@ -47,3 +47,15 @@ export const sendNotification = (title: string, body: string) => {
   const event = new CustomEvent('trigger-alarm', { detail: { title, body } });
   window.dispatchEvent(event);
 };
+
+export const formatTime12Hour = (time24?: string): string => {
+  if (!time24) return '';
+  const parts = time24.split(':');
+  if (parts.length < 2) return time24;
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  if (isNaN(hours) || isNaN(minutes)) return time24;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
+  return `${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+};
