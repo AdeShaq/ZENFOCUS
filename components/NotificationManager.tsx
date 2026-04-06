@@ -58,7 +58,11 @@ export const NotificationManager: React.FC = () => {
                 vibrate: [200, 100, 200, 100, 200, 100, 200],
                 requireInteraction: true
             };
-            new Notification(title, options);
+            const notif = new Notification(title, options);
+            notif.onclick = () => {
+                window.focus();
+                notif.close();
+            };
         }
     };
 

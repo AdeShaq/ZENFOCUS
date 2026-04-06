@@ -51,7 +51,7 @@ const App: React.FC = () => {
   const [tasks, setTasks] = useLocalStorage<TaskDefinition[]>('zenfocus_tasks', APRIL_2026_TASKS);
   const [finances, setFinances] = useLocalStorage<FinanceEntry[]>('zenfocus_finances', APRIL_2026_FINANCES);
   const [notes, setNotes] = useLocalStorage<Note[]>('zenfocus_notes', INITIAL_NOTES);
-  const [progress, setProgress] = useLocalStorage<UserProgress>('zenfocus_progress', { completedTaskIds: {}, missedTaskReasons: {}, eodReviews: {} });
+  const [progress, setProgress] = useLocalStorage<UserProgress>('zenfocus_progress', { completedTaskIds: {}, missedTaskReasons: {}, eodReviews: {}, waterSachets: {} });
 
   // Track sent notifications
   const [sentNotifications] = useState<Set<string>>(new Set());
@@ -60,19 +60,28 @@ const App: React.FC = () => {
   useEffect(() => {
     // Inject Morning Routine Task Document
     setTasks(prev => {
-      if (!prev.find(t => t.title === 'MORNING ROUTINE')) {
-        return [{
+      let isChanged = false;
+      let newTasks = [...prev];
+      const mrIndex = newTasks.findIndex(t => t.title === 'MORNING ROUTINE');
+      const mrDesc = "Thank God for waking up\nRead Psalms 118:24\nDeclaration from notes\nMorning workout session: 50-100 pushups, 100 grips/arm, 2x30 lateral raises, 25 squats\nBath, Plan & Start Day";
+      
+      if (mrIndex === -1) {
+        newTasks.unshift({
           id: "task-morning-routine",
           title: "MORNING ROUTINE",
-          description: "Thank God for waking up\nRead Psalms 118:24\nDeclaration from notes\nMorning workout session\nBath, Plan & Start Day",
+          description: mrDesc,
           category: TaskCategory.SPIRITUAL,
           frequency: TaskFrequency.DAILY,
           time: "06:00",
           endTime: "08:00",
           color: "bg-amber-500",
-        }, ...prev];
+        });
+        isChanged = true;
+      } else if (newTasks[mrIndex].description !== mrDesc) {
+        newTasks[mrIndex] = { ...newTasks[mrIndex], description: mrDesc };
+        isChanged = true;
       }
-      return prev;
+      return isChanged ? newTasks : prev;
     });
 
     // Inject Daily Declarations and Prayer Points
@@ -173,6 +182,19 @@ const App: React.FC = () => {
           sentNotifications.add(notifId);
         }
       });
+      
+      // Bi-hourly Water Reminder
+      const isEvenHour = now.getHours() % 2 === 0;
+      if (isEvenHour && currentHHmm.endsWith(':00')) {
+        const notifId = `${todayDateKey}-water-${now.getHours()}`;
+        if (!sentNotifications.has(notifId)) {
+          sendNotification(
+            `Hydration Time! 💧`,
+            `Time to take a sachet of water to hit your 3-5 daily goal!`
+          );
+          sentNotifications.add(notifId);
+        }
+      }
     }, 10000); // Check every 10 seconds
 
     return () => clearInterval(checkInterval);
@@ -188,10 +210,9 @@ const App: React.FC = () => {
   const todaysTasks = useMemo(() => {
     const filtered = filterTasksForDate(tasks, selectedDate);
     const filtered2 = activeCategory === 'All' ? filtered : filtered.filter(t => t.category === activeCategory);
-    // Show pending tasks first, then completed at bottom (dimmed)
+    // Hidden when completed, based on user request
     const pending = filtered2.filter(t => !completedToday.includes(t.id));
-    const done = filtered2.filter(t => completedToday.includes(t.id));
-    return [...pending, ...done];
+    return pending;
   }, [selectedDate, activeCategory, tasks, completedToday]);
 
   // Next Task Countdown Logic
@@ -427,6 +448,46 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
+        {/* Water Intake Tracker */}
+        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800/50">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex items-center justify-center p-1.5 shadow-sm">
+                <span className="text-lg">💧</span>
+              </div>
+              <div>
+                <h3 className="text-slate-800 dark:text-slate-100 font-bold leading-tight">Water Intake</h3>
+                <p className="text-[11px] text-slate-400 font-medium">Goal: 3-5 sachets daily</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setProgress(p => ({ ...p, waterSachets: { ...p.waterSachets, [dateKey]: Math.max(0, (p.waterSachets?.[dateKey] || 0) - 1) } }))}
+                className="w-8 h-8 rounded-full bg-stone-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-black hover:bg-stone-200"
+              >
+                -
+              </button>
+              <span className="text-xl font-black min-w-[28px] text-center dark:text-white">
+                {progress.waterSachets?.[dateKey] || 0}
+              </span>
+              <button
+                onClick={() => setProgress(p => ({ ...p, waterSachets: { ...p.waterSachets, [dateKey]: (p.waterSachets?.[dateKey] || 0) + 1 } }))}
+                className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-black shadow-md hover:bg-blue-600 active:scale-95"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map(i => {
+              const count = progress.waterSachets?.[dateKey] || 0;
+              return (
+                <div key={i} className={`flex-1 h-2 rounded-full transition-all ${i <= count ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-stone-200 dark:bg-slate-800'}`} />
+              );
+            })}
+          </div>
+        </div>
+
 
         {/* End of Day Review */}
         <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800/50">

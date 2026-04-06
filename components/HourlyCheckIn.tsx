@@ -152,31 +152,21 @@ export const useHourlyCheckIn = (currentTaskTitle?: string) => {
         const lastHourKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}`;
         if (lastCheckIn !== lastHourKey) {
           setLastCheckIn(lastHourKey);
-
-          // Fire browser notification
-          if ('Notification' in window && Notification.permission === 'granted') {
-            const messages = [
-              "What are you up to? Time for your hourly check-in! 💡",
-              "Pause and reflect — how's your hour going? 🎯",
-              "Check-in time! What are you working on right now? ⚡",
-              "Quick check-in: how are you feeling this hour? 🙌",
-            ];
-            const msg = messages[now.getHours() % messages.length];
-            const notif = new Notification("ZenFocus Check-In 🌟", {
-              body: currentTaskTitle ? `Currently: ${currentTaskTitle}\n${msg}` : msg,
-              icon: '/icon.svg',
-              tag: 'zenfocus-checkin',
-              requireInteraction: false,
-            });
-            notif.onclick = () => {
-              window.focus();
-              notif.close();
-              setShowModal(true);
-            };
-          } else {
-            // No push permission — just show in-app modal
-            setShowModal(true);
-          }
+          
+          const messages = [
+            "What are you up to? Time for your hourly check-in! 💡",
+            "Pause and reflect — how's your hour going? 🎯",
+            "Check-in time! What are you working on right now? ⚡",
+            "Quick check-in: how are you feeling this hour? 🙌",
+          ];
+          const msg = messages[now.getHours() % messages.length];
+          const body = currentTaskTitle ? `Currently: ${currentTaskTitle}\n${msg}` : msg;
+          
+          import('../utils').then(({ sendNotification }) => {
+            sendNotification('ZenFocus Check-In 🌟', body);
+          });
+          
+          setShowModal(true);
         }
       }
     };

@@ -36,6 +36,7 @@ export interface UserProgress {
   completedTaskIds: Record<string, string[]>; // Date key (YYYY-MM-DD) -> Array of completed Task IDs
   missedTaskReasons: Record<string, Record<string, string>>; // Date key -> Task ID -> Reason string
   eodReviews: Record<string, string>; // Date key -> Review text
+  waterSachets?: Record<string, number>; // Date key -> Number of water sachets consumed
 }
 
 export interface Note {
