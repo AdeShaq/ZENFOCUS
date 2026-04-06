@@ -11,7 +11,8 @@ import {
   Moon,
   Timer,
   FileText,
-  Wallet
+  Wallet,
+  MessageCircle
 } from 'lucide-react';
 import { format, parse, differenceInSeconds, isAfter, startOfToday, addDays } from 'date-fns';
 import { CalendarStrip } from './components/CalendarStrip';
@@ -20,6 +21,9 @@ import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { NotificationManager } from './components/NotificationManager';
 import { NotesView } from './components/NotesView';
 import { FinancesView } from './components/FinancesView';
+import { WorkoutView } from './components/WorkoutView';
+import { useHourlyCheckIn } from './components/HourlyCheckIn';
+import { VerseModal } from './components/VerseModal';
 import { filterTasksForDate, formatDateKey, requestNotificationPermission, sendNotification, formatTime12Hour } from './utils';
 import { UserProgress, TaskCategory, TaskFrequency, TaskDefinition, Note, FinanceEntry } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -32,10 +36,16 @@ const App: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [plannerSubTab, setPlannerSubTab] = useState<'schedule' | 'workouts'>('schedule');
+  const [showVerse, setShowVerse] = useState(false);
+  const [activePlannerSection, setActivePlannerSection] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('zenfocus_theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
+  
+  const [plannerEditingId, setPlannerEditingId] = useState<string | null>(null);
+  const [plannerEditTask, setPlannerEditTask] = useState<Partial<TaskDefinition>>({});
   
   // Storage Hooks
   const [tasks, setTasks] = useLocalStorage<TaskDefinition[]>('zenfocus_tasks', APRIL_2026_TASKS);
@@ -45,6 +55,81 @@ const App: React.FC = () => {
 
   // Track sent notifications
   const [sentNotifications] = useState<Set<string>>(new Set());
+
+  // Background Data Synchronizer (Migrations)
+  useEffect(() => {
+    // Inject Morning Routine Task Document
+    setTasks(prev => {
+      if (!prev.find(t => t.title === 'MORNING ROUTINE')) {
+        return [{
+          id: "task-morning-routine",
+          title: "MORNING ROUTINE",
+          description: "Thank God for waking up\nRead Psalms 118:24\nDeclaration from notes\nMorning workout session\nBath, Plan & Start Day",
+          category: TaskCategory.SPIRITUAL,
+          frequency: TaskFrequency.DAILY,
+          time: "06:00",
+          endTime: "08:00",
+          color: "bg-amber-500",
+        }, ...prev];
+      }
+      return prev;
+    });
+
+    // Inject Daily Declarations and Prayer Points
+    setNotes(prev => {
+      let isChanged = false;
+      let newNotes = [...prev];
+      
+      const hasDeclarations = newNotes.find(n => n.title === 'The DAILY DECLARATIONS');
+      if (!hasDeclarations) {
+        newNotes.unshift({
+          id: `note-declarations`,
+          title: 'The DAILY DECLARATIONS',
+          content: `<ul>
+  <li>I see, I hear, I know and I do God's will</li>
+  <li>I am beautifully and wonderfully made</li>
+  <li>I am loved by God, by friends, by family, by young and old</li>
+  <li>I am favored by God, by friends, by family, by young and old</li>
+  <li>I am strengthened by God today</li>
+  <li>I enjoy the Wisdom, Guidance and Creativity of God today.</li>
+  <li>I succeed in all my endeavors today</li>
+  <li>I dont lack ideas and solutions</li>
+  <li>I dont fail because God never fails.</li>
+</ul>`,
+          dateCreated: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
+          isPinned: true,
+          color: '#e2e8f0' // Slate tone
+        });
+        isChanged = true;
+      }
+
+      const hasPrayers = newNotes.find(n => n.title === 'The Daily Prayer Points');
+      if (!hasPrayers) {
+        newNotes.unshift({
+          id: `note-prayers`,
+          title: 'The Daily Prayer Points',
+          content: `I pray that,
+<ul>
+  <li>I grow to be better emotionally, physically, spiritually, financially, academically, career wise and be the man she deserves</li>
+  <li>My heart desires be changed</li>
+  <li>My future be covered and fruitful</li>
+  <li>Prayers for Friends & The Resistance</li>
+  <li>I let go of every pain and hurt towards Ayomide (and then prayers over her life)</li>
+  <li>Prayers for my family (their health, protection, provision and success)</li>
+  <li>God's Direction, Voice and Provision in my life, academics, relationships and career.</li>
+</ul>`,
+          dateCreated: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
+          isPinned: true,
+          color: '#e2e8f0'
+        });
+        isChanged = true;
+      }
+      
+      return isChanged ? newNotes : prev;
+    });
+  }, [setTasks, setNotes]);
 
   // Real-time clock update (every second)
   useEffect(() => {
@@ -94,18 +179,20 @@ const App: React.FC = () => {
   }, [sentNotifications]);
 
   const dateKey = formatDateKey(selectedDate);
-
-  const todaysTasks = useMemo(() => {
-    const filtered = filterTasksForDate(tasks, selectedDate);
-    if (activeCategory === 'All') return filtered;
-    return filtered.filter(t => t.category === activeCategory);
-  }, [selectedDate, activeCategory, tasks]);
-
   const completedToday = progress.completedTaskIds[dateKey] || [];
   const totalTasksTodayCount = filterTasksForDate(tasks, selectedDate).length;
   const completionPercentage = totalTasksTodayCount > 0
     ? Math.round((completedToday.length / totalTasksTodayCount) * 100)
     : 0;
+
+  const todaysTasks = useMemo(() => {
+    const filtered = filterTasksForDate(tasks, selectedDate);
+    const filtered2 = activeCategory === 'All' ? filtered : filtered.filter(t => t.category === activeCategory);
+    // Show pending tasks first, then completed at bottom (dimmed)
+    const pending = filtered2.filter(t => !completedToday.includes(t.id));
+    const done = filtered2.filter(t => completedToday.includes(t.id));
+    return [...pending, ...done];
+  }, [selectedDate, activeCategory, tasks, completedToday]);
 
   // Next Task Countdown Logic
   const nextTaskInfo = useMemo(() => {
@@ -134,6 +221,22 @@ const App: React.FC = () => {
     }
     return null;
   }, [currentTime]);
+
+  // Currently doing task (task whose time window includes now)
+  const doingNowTask = useMemo(() => {
+    const today = startOfToday();
+    const allTasks = filterTasksForDate(tasks, currentTime) as Array<TaskDefinition & { endTime?: string }>;
+    return allTasks
+      .filter(t => t.time && t.endTime)
+      .find(t => {
+        const start = parse(t.time!, 'HH:mm', today);
+        const end = parse(t.endTime!, 'HH:mm', today);
+        return currentTime >= start && currentTime <= end;
+      });
+  }, [currentTime, tasks]);
+
+  // Hourly check-in hook
+  const { modal: checkInModal, triggerNow: triggerCheckIn } = useHourlyCheckIn(doingNowTask?.title);
 
   const toggleTask = (taskId: string) => {
     setProgress(prev => {
@@ -164,6 +267,7 @@ const App: React.FC = () => {
 
   const renderToday = () => (
     <>
+      {checkInModal}
       <header className="px-6 pt-10 pb-4 bg-stone-50 dark:bg-slate-900 transition-colors duration-300 rounded-b-[3rem] shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -200,8 +304,15 @@ const App: React.FC = () => {
               <Bell size={20} />
             </button>
             <button
+              aria-label="Hourly Check-In"
+              onClick={() => triggerCheckIn()}
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95 transition-all shadow-inner hover:bg-stone-300 dark:hover:bg-slate-700" title="Check-In">
+              <MessageCircle size={20} />
+            </button>
+            <button
               aria-label="Profile"
               className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 overflow-hidden active:scale-95 transition-all shadow-inner border border-black/5 dark:border-white/5"
+              onClick={() => setShowVerse(true)}
             >
               <img src="https://picsum.photos/seed/xeno/100" alt="Avatar" className="w-full h-full object-cover" />
             </button>
@@ -209,14 +320,29 @@ const App: React.FC = () => {
         </div>
 
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-black tracking-tighter dark:text-slate-100">
-              {format(currentTime, 'hh:mm')}
-              <span className="text-sm font-bold opacity-40 ml-1 uppercase">{format(currentTime, 'a')}</span>
-            </span>
-            <span className="text-xs font-mono font-bold text-indigo-500 dark:text-indigo-400 opacity-50 w-6">
-              :{format(currentTime, 'ss')}
-            </span>
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-1">
+              <span className="text-4xl font-black tracking-tighter dark:text-slate-100">
+                {format(currentTime, 'hh:mm')}
+                <span className="text-sm font-bold opacity-40 ml-1 uppercase">{format(currentTime, 'a')}</span>
+              </span>
+              <span className="text-xs font-mono font-bold text-indigo-500 dark:text-indigo-400 opacity-50 w-6">
+                :{format(currentTime, 'ss')}
+              </span>
+            </div>
+            {doingNowTask ? (
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 truncate max-w-[200px]">
+                  Now: {doingNowTask.title}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
+                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">No active task right now</span>
+              </div>
+            )}
           </div>
 
           {nextTaskInfo && (
@@ -302,151 +428,226 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* EOD Review Section */}
-        {todaysTasks.length > 0 && currentTab === 'Today' && (
-          <div className="mt-12 bg-stone-50 dark:bg-slate-800 p-6 rounded-[2rem] border border-black/5 dark:border-slate-700/50 shadow-sm">
-            <h3 className="font-black text-xl mb-4 dark:text-white flex items-center gap-2">
-              <Moon size={20} className="text-indigo-500" /> End of Day Review
-            </h3>
-            
-            <div className="space-y-4 mb-6">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Missed Tasks Tracker</p>
-              {todaysTasks.filter(t => !completedToday.includes(t.id)).map(task => {
-                const reason = progress.missedTaskReasons?.[dateKey]?.[task.id] || '';
-                return (
-                  <div key={task.id} className="bg-stone-100 dark:bg-slate-900 p-3 rounded-2xl border border-rose-100 dark:border-rose-900/30">
-                    <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2 truncate px-1">✕ {task.title}</div>
-                    <input 
-                      type="text"
-                      placeholder="Reason for missing this?"
-                      value={reason}
-                      onChange={e => setProgress(prev => ({
-                        ...prev,
-                        missedTaskReasons: {
-                          ...prev.missedTaskReasons,
-                          [dateKey]: {
-                            ...(prev.missedTaskReasons?.[dateKey] || {}),
-                            [task.id]: e.target.value
-                          }
-                        }
-                      }))}
-                      className="w-full bg-white dark:bg-slate-800 border-none rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 outline-none"
-                    />
-                  </div>
-                );
-              })}
-              {todaysTasks.filter(t => !completedToday.includes(t.id)).length === 0 && (
-                <div className="text-sm font-medium text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
-                  🎉 All tasks completed today! Amazing job!
-                </div>
-              )}
+        {/* End of Day Review */}
+        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800/50">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 flex items-center justify-center p-1.5 shadow-sm">
+              <FileText />
             </div>
-
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Daily Summary</p>
-            <textarea
-              placeholder="How did today go?"
-              value={progress.eodReviews?.[dateKey] || ''}
-              onChange={e => setProgress(prev => ({
-                ...prev,
-                eodReviews: { ...prev.eodReviews, [dateKey]: e.target.value }
-              }))}
-              className="w-full h-24 bg-stone-100 dark:bg-slate-900 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
-            />
+            <h3 className="text-slate-800 dark:text-slate-100 font-bold">End of Day Review</h3>
           </div>
-        )}
+          <textarea
+            className="w-full bg-stone-50 dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-4 text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-purple-500/50 transition-all resize-none shadow-inner"
+            rows={4}
+            placeholder="How did today go? What could be better tomorrow?"
+            value={progress.eodReviews[dateKey] || ''}
+            onChange={(e) => {
+              setProgress(prev => ({
+                ...prev,
+                eodReviews: {
+                  ...prev.eodReviews,
+                  [dateKey]: e.target.value
+                }
+              }));
+            }}
+          />
+        </div>
+
       </main>
     </>
   );
 
+  // Render VerseModal outside renderToday so it's accessible from anywhere
+  const verseModal = showVerse ? <VerseModal onClose={() => setShowVerse(false)} /> : null;
+
   const renderPlanner = () => (
     <main className="flex-1 overflow-y-auto px-6 pt-12 no-scrollbar pb-32">
       <h1 className="text-3xl font-black mb-1 dark:text-white tracking-tight">Task Planner</h1>
-      <p className="text-slate-400 dark:text-slate-500 mb-8 font-medium text-sm">Organize your long-term success</p>
+      <p className="text-slate-400 dark:text-slate-500 mb-4 font-medium text-sm">Organize your long-term success</p>
 
-      {/* Weekly Timetable */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-9 h-9 rounded-2xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex items-center justify-center shadow-sm">
-            <CalendarIcon size={18} />
+      {/* Sub-Tab Toggle */}
+      <div className="flex items-center gap-2 mb-8 bg-stone-100 dark:bg-slate-800 p-1 rounded-2xl">
+        <button 
+          onClick={() => setPlannerSubTab('schedule')} 
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all ${plannerSubTab === 'schedule' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
+        >
+          📋 Schedule
+        </button>
+        <button 
+          onClick={() => setPlannerSubTab('workouts')} 
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all ${plannerSubTab === 'workouts' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
+        >
+          🏋️ Workouts
+        </button>
+      </div>
+
+      {plannerSubTab === 'workouts' ? (
+        <WorkoutView />
+      ) : (
+      <>
+      {/* Quick Navigation — each button toggles its section */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6">
+        {[
+          { label: '📅 Classes', key: 'classes' },
+          { label: '💪 Daily Habits', key: 'DAILY' },
+          { label: '🗓 Weekly', key: 'WEEKLY' },
+          { label: '🔁 Biweekly', key: 'BIWEEKLY' },
+          { label: '📋 Monthly', key: 'MONTHLY' },
+        ].map(item => (
+          <button
+            key={item.key}
+            onClick={() => setActivePlannerSection(activePlannerSection === item.key ? null : item.key)}
+            className={`px-4 py-2 rounded-2xl text-[11px] font-black whitespace-nowrap border transition-all shadow-sm ${
+              activePlannerSection === item.key
+                ? 'bg-indigo-600 text-white border-indigo-600 scale-105'
+                : 'bg-white dark:bg-slate-800 border-black/5 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-stone-100 dark:hover:bg-slate-700'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {!activePlannerSection && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center mb-4 text-indigo-400">
+            <ListTodo size={28} />
           </div>
-          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Weekly Classes</h2>
+          <p className="text-slate-500 dark:text-slate-400 font-semibold text-sm">Select a category above to view &amp; manage tasks</p>
         </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((day, idx) => {
-            const dayTasks = tasks.filter(t => t.category === TaskCategory.ACADEMICS && t.daysOfWeek?.includes(idx + 1)).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
-            if (dayTasks.length === 0) return null;
-            return (
-              <div key={day} className="min-w-[180px] bg-[#F9F9F9] dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-black/5 dark:border-slate-700/50 transition-all hover:scale-[1.02]">
-                <h3 className="font-black text-slate-400 mb-3 uppercase tracking-widest text-xs">{day}</h3>
-                <div className="space-y-2">
-                  {dayTasks.map(t => (
-                    <div key={t.id} className="p-3 bg-stone-200 dark:bg-slate-900 rounded-2xl">
-                      <div className="text-[10px] font-black text-blue-600 dark:text-blue-400 mb-0.5">{t.time ? formatTime12Hour(t.time) : ''}</div>
-                      <div className="font-bold text-sm leading-tight text-slate-800 dark:text-white mb-1">{t.title}</div>
-                      <div className="text-[10px] font-medium text-slate-500 line-clamp-2">{t.description}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      )}
 
-      {/* Special Section for My Workout */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-9 h-9 rounded-2xl bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-300 flex items-center justify-center shadow-sm">
-            <TrendingUp size={18} />
-          </div>
-          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">My Workout</h2>
-        </div>
-        <div className="space-y-3">
-          {tasks.filter(t => t.category === TaskCategory.MY_WORKOUT).map(task => (
-            <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
-              <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight">{task.title}</h4>
-                  <span className="text-[10px] font-bold text-slate-400 bg-stone-200 dark:bg-slate-700 px-2 py-0.5 rounded-full">{task.frequency}</span>
-                </div>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Standard Sections (excluding My Workout) */}
-      {Object.values(TaskFrequency).map(freq => {
-        const freqTasks = tasks.filter(t => t.frequency === freq && t.category !== TaskCategory.MY_WORKOUT);
-        if (freqTasks.length === 0) return null;
-
+      {/* CLASSES SECTION */}
+      {activePlannerSection === 'classes' && (() => {
+        const classTasks = tasks.filter(t => t.category === TaskCategory.ACADEMICS);
+        const startEdit = (t: TaskDefinition) => { setPlannerEditingId(t.id); setPlannerEditTask({ ...t }); };
+        const saveEdit = () => {
+          if (plannerEditingId) {
+            setTasks(prev => prev.map(t => t.id === plannerEditingId ? { ...t, ...plannerEditTask } : t));
+            setPlannerEditingId(null);
+          }
+        };
+        const deleteTask = (id: string) => setTasks(prev => prev.filter(t => t.id !== id));
+        const addTask = () => {
+          const id = `task-${Date.now()}`;
+          setTasks(prev => [...prev, { id, title: 'New Class', description: '', category: TaskCategory.ACADEMICS, frequency: TaskFrequency.WEEKLY, time: '', daysOfWeek: [], color: 'bg-blue-100' }]);
+          startEdit({ id, title: 'New Class', description: '', category: TaskCategory.ACADEMICS, frequency: TaskFrequency.WEEKLY, time: '', daysOfWeek: [], color: 'bg-blue-100' } as TaskDefinition);
+        };
         return (
-          <section key={freq} className="mb-12">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-9 h-9 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shadow-sm">
-                <ListTodo size={18} />
+          <section className="mb-10 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-2xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex items-center justify-center shadow-sm"><CalendarIcon size={18} /></div>
+                <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Weekly Classes</h2>
               </div>
-              <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 capitalize">{freq.toLowerCase()} Habits</h2>
+              <button onClick={addTask} className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-[11px] font-black shadow hover:bg-indigo-700">+ Add</button>
             </div>
             <div className="space-y-3">
-              {freqTasks.map(task => (
-                <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
-                  <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
-                  <div className="flex-1">
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight">{task.title}</h4>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p>
+              {classTasks.map(task => plannerEditingId === task.id ? (
+                <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border-2 border-indigo-400 shadow-lg">
+                  <input className="w-full mb-2 font-bold text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.title || ''} onChange={e => setPlannerEditTask(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
+                  <input className="w-full mb-2 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.description || ''} onChange={e => setPlannerEditTask(p => ({ ...p, description: e.target.value }))} placeholder="Description" />
+                  <div className="flex gap-2 mb-2">
+                    <input type="time" className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.time || ''} onChange={e => setPlannerEditTask(p => ({ ...p, time: e.target.value }))} />
+                    <input type="time" className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={(plannerEditTask as any).endTime || ''} onChange={e => setPlannerEditTask(p => ({ ...p, endTime: e.target.value }))} placeholder="End" />
                   </div>
-                  <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2.5 py-1.5 bg-stone-200 dark:bg-slate-900 rounded-xl">
-                    {task.category}
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d, i) => (
+                      <button key={d} onClick={() => setPlannerEditTask(p => { const days = p.daysOfWeek || []; return { ...p, daysOfWeek: days.includes(i+1) ? days.filter(x => x !== i+1) : [...days, i+1] }; })} className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${(plannerEditTask.daysOfWeek||[]).includes(i+1) ? 'bg-indigo-600 text-white' : 'bg-stone-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>{d}</button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={saveEdit} className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-black">Save</button>
+                    <button onClick={() => setPlannerEditingId(null)} className="flex-1 py-2 bg-stone-200 dark:bg-slate-700 rounded-xl text-sm font-black dark:text-white">Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-3">
+                  <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight">{task.title}</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">{task.time ? formatTime12Hour(task.time) : ''}{(task as any).endTime ? ` – ${formatTime12Hour((task as any).endTime)}` : ''} · {(task.daysOfWeek||[]).map(d=>['','Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]||'').join(', ')}</p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => startEdit(task)} className="p-2 rounded-xl bg-stone-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors text-xs font-black">Edit</button>
+                    <button onClick={() => deleteTask(task.id)} className="p-2 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 hover:bg-rose-100 transition-colors text-xs font-black">✕</button>
                   </div>
                 </div>
               ))}
+              {classTasks.length === 0 && <p className="text-center text-sm text-slate-400 py-4">No classes yet. Tap + Add to create one.</p>}
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* FREQUENCY SECTIONS */}
+      {Object.values(TaskFrequency).filter(freq => activePlannerSection === freq).map(freq => {
+        const freqTasks = tasks.filter(t => t.frequency === freq && t.category !== TaskCategory.MY_WORKOUT);
+        const startEdit = (t: TaskDefinition) => { setPlannerEditingId(t.id); setPlannerEditTask({ ...t }); };
+        const saveEdit = () => {
+          if (plannerEditingId) {
+            setTasks(prev => prev.map(t => t.id === plannerEditingId ? { ...t, ...plannerEditTask } : t));
+            setPlannerEditingId(null);
+          }
+        };
+        const deleteTask = (id: string) => setTasks(prev => prev.filter(t => t.id !== id));
+        const addTask = () => {
+          const id = `task-${Date.now()}`;
+          const newTask: TaskDefinition = { id, title: 'New Task', description: '', category: TaskCategory.PRODUCTIVITY, frequency: freq, time: '', color: 'bg-indigo-100' };
+          setTasks(prev => [...prev, newTask]);
+          startEdit(newTask);
+        };
+        const COLORS = ['bg-indigo-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100', 'bg-blue-100', 'bg-purple-100', 'bg-orange-100'];
+        return (
+          <section key={freq} className="mb-10 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shadow-sm"><ListTodo size={18} /></div>
+                <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 capitalize">{freq.toLowerCase()} Habits</h2>
+              </div>
+              <button onClick={addTask} className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-[11px] font-black shadow hover:bg-indigo-700">+ Add</button>
+            </div>
+            <div className="space-y-3">
+              {freqTasks.map(task => plannerEditingId === task.id ? (
+                <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border-2 border-indigo-400 shadow-lg">
+                  <input className="w-full mb-2 font-bold text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.title || ''} onChange={e => setPlannerEditTask(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
+                  <input className="w-full mb-2 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.description || ''} onChange={e => setPlannerEditTask(p => ({ ...p, description: e.target.value }))} placeholder="Description" />
+                  <div className="flex gap-2 mb-2">
+                    <input type="time" className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.time || ''} onChange={e => setPlannerEditTask(p => ({ ...p, time: e.target.value }))} />
+                    <select className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.category || TaskCategory.PRODUCTIVITY} onChange={e => setPlannerEditTask(p => ({ ...p, category: e.target.value as TaskCategory }))}>
+                      {Object.values(TaskCategory).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex gap-1.5 mb-3 flex-wrap">
+                    {COLORS.map(c => (
+                      <button key={c} onClick={() => setPlannerEditTask(p => ({ ...p, color: c }))} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${c} ${plannerEditTask.color === c ? 'border-indigo-500 scale-110' : 'border-transparent'}`} />
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={saveEdit} className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-black">Save</button>
+                    <button onClick={() => setPlannerEditingId(null)} className="flex-1 py-2 bg-stone-200 dark:bg-slate-700 rounded-xl text-sm font-black dark:text-white">Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-3">
+                  <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight truncate">{task.title}</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">{task.category}{task.time ? ` · ${formatTime12Hour(task.time)}` : ''}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button onClick={() => startEdit(task)} className="p-2 rounded-xl bg-stone-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors text-xs font-black">Edit</button>
+                    <button onClick={() => deleteTask(task.id)} className="p-2 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 hover:bg-rose-100 transition-colors text-xs font-black">✕</button>
+                  </div>
+                </div>
+              ))}
+              {freqTasks.length === 0 && <p className="text-center text-sm text-slate-400 py-4">No {freq.toLowerCase()} habits. Tap + Add to create one.</p>}
             </div>
           </section>
         );
       })}
+      </>
+      )}
     </main>
   );
 
@@ -503,6 +704,7 @@ const App: React.FC = () => {
 
       <PWAInstallPrompt />
       <NotificationManager />
+      {verseModal}
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-100 dark:border-slate-800/50 px-2 sm:px-6 py-4 z-20">
         <div className="max-w-md mx-auto flex items-center justify-between">

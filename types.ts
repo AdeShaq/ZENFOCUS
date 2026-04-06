@@ -26,6 +26,7 @@ export interface TaskDefinition {
   category: TaskCategory;
   frequency: TaskFrequency;
   time?: string; // HH:mm format
+  endTime?: string; // HH:mm format
   daysOfWeek?: number[]; // 0 (Sun) - 6 (Sat)
   dayOfMonth?: number;
   color: string;
@@ -43,6 +44,8 @@ export interface Note {
   content: string;
   dateCreated: string;
   lastUpdated: string;
+  color?: string;
+  isPinned?: boolean;
 }
 
 export interface FinanceEntry {
