@@ -1,7 +1,30 @@
 import React, { useState } from 'react';
-import { Check, Clock, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { TaskDefinition } from '../types';
 import { formatTime12Hour } from '../utils';
+
+// Warm pastel color map matching the soft aesthetic
+const PASTEL_MAP: Record<string, string> = {
+  'bg-purple-100': 'bg-violet-50 dark:bg-violet-950/30',
+  'bg-yellow-100': 'bg-amber-50 dark:bg-amber-950/30',
+  'bg-green-100': 'bg-emerald-50 dark:bg-emerald-950/30',
+  'bg-blue-100': 'bg-sky-50 dark:bg-sky-950/30',
+  'bg-orange-100': 'bg-orange-50 dark:bg-orange-950/30',
+  'bg-indigo-100': 'bg-indigo-50 dark:bg-indigo-950/30',
+  'bg-pink-100': 'bg-rose-50 dark:bg-rose-950/30',
+  'bg-red-100': 'bg-red-50 dark:bg-red-950/30',
+};
+
+const BORDER_MAP: Record<string, string> = {
+  'bg-purple-100': 'border-violet-200/60 dark:border-violet-800/30',
+  'bg-yellow-100': 'border-amber-200/60 dark:border-amber-800/30',
+  'bg-green-100': 'border-emerald-200/60 dark:border-emerald-800/30',
+  'bg-blue-100': 'border-sky-200/60 dark:border-sky-800/30',
+  'bg-orange-100': 'border-orange-200/60 dark:border-orange-800/30',
+  'bg-indigo-100': 'border-indigo-200/60 dark:border-indigo-800/30',
+  'bg-pink-100': 'border-rose-200/60 dark:border-rose-800/30',
+  'bg-red-100': 'border-red-200/60 dark:border-red-800/30',
+};
 
 interface TaskCardProps {
   task: TaskDefinition;
@@ -12,66 +35,64 @@ interface TaskCardProps {
 export const TaskCard: React.FC<TaskCardProps> = ({ task, isCompleted, onToggle }) => {
   const [expanded, setExpanded] = useState(false);
   const hasLongDesc = task.description && task.description.length > 60;
+  const baseColor = task.color?.split(' ')[0] || 'bg-purple-100';
+  const bgClass = PASTEL_MAP[baseColor] || 'bg-stone-50 dark:bg-[#222244]';
+  const borderClass = BORDER_MAP[baseColor] || 'border-stone-200/60 dark:border-white/10';
 
   return (
-    <div 
-      className={`relative overflow-hidden rounded-[2rem] border transition-all duration-500 transform ${
-        isCompleted ? 'opacity-40 scale-95 grayscale' : 'hover:shadow-lg active:scale-[0.98]'
-      } ${task.color} bg-opacity-100 dark:bg-opacity-10 dark:border-opacity-20 border-black/5 dark:border-white/10 shadow-sm`}
+    <div
+      className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+        isCompleted ? 'opacity-40 scale-[0.97]' : 'hover:shadow-md active:scale-[0.98]'
+      } ${bgClass} ${borderClass}`}
     >
-      <div className="p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="text-[9px] uppercase font-black tracking-[0.1em] px-2.5 py-1 rounded-full bg-white/60 dark:bg-white/15 border border-black/5 dark:border-white/20 backdrop-blur-sm whitespace-nowrap text-slate-700 dark:text-slate-100">
-                {task.category}
+      <div className="p-4 flex items-center gap-3">
+        {/* Left content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#9B9590] dark:text-[#B0A8A0]">
+              {task.category}
+            </span>
+            {task.time && (
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-[#9B9590] dark:text-[#B0A8A0]">
+                <Clock size={11} /> {formatTime12Hour(task.time)}
+                {task.endTime && <span>– {formatTime12Hour(task.endTime)}</span>}
               </span>
-              {task.time && (
-                <span className="flex items-center gap-1 text-[10px] font-black text-slate-600 dark:text-slate-200 whitespace-nowrap">
-                  <Clock size={12} className="stroke-[2.5px]" /> {formatTime12Hour(task.time)}
-                  {task.endTime && <span className="text-slate-500 dark:text-slate-300">– {formatTime12Hour(task.endTime)}</span>}
-                </span>
-              )}
-            </div>
-            <h3 className={`font-black text-lg leading-tight tracking-tight dark:text-white ${isCompleted ? 'line-through' : ''}`}>
-              {task.title}
-            </h3>
-            {task.description && (
-              <p className={`text-[13px] font-medium opacity-70 mt-1 leading-snug text-slate-800 dark:text-white/80 ${expanded ? '' : 'line-clamp-2'}`}>
-                {task.description}
-              </p>
-            )}
-            {hasLongDesc && (
-              <button
-                onClick={e => { e.stopPropagation(); setExpanded(!expanded); }}
-                className="flex items-center gap-1 mt-1.5 text-[10px] font-black text-slate-600 dark:text-slate-200 hover:opacity-100 transition-opacity"
-              >
-                {expanded ? <><ChevronUp size={12}/> Less</> : <><ChevronDown size={12}/> More</>}
-              </button>
             )}
           </div>
-          
-          <button
-            onClick={() => onToggle(task.id)}
-            aria-label={isCompleted ? "Unmark Task" : "Complete Task"}
-            className={`w-14 h-14 flex items-center justify-center rounded-2xl border transition-all duration-300 shrink-0 ${
-              isCompleted 
-                ? 'bg-black/90 dark:bg-indigo-500 border-transparent shadow-lg rotate-[360deg]' 
-                : 'bg-white dark:bg-slate-900 border-black/10 dark:border-white/10 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm'
-            }`}
-          >
-            {isCompleted ? (
-              <Check size={24} className="text-white" strokeWidth={3} />
-            ) : (
-              <div className="w-6 h-6 rounded-full border-[2.5px] border-black/20 dark:border-white/20 transition-all" />
-            )}
-          </button>
+          <h3 className={`font-bold text-[15px] leading-tight text-[#2D2A26] dark:text-[#F0EDE8] ${isCompleted ? 'line-through' : ''}`}>
+            {task.title}
+          </h3>
+          {task.description && (
+            <p className={`text-[12px] font-medium mt-1 leading-snug text-[#9B9590] dark:text-[#B0A8A0] ${expanded ? '' : 'line-clamp-2'}`}>
+              {task.description}
+            </p>
+          )}
+          {hasLongDesc && (
+            <button
+              onClick={e => { e.stopPropagation(); setExpanded(!expanded); }}
+              className="flex items-center gap-1 mt-1 text-[10px] font-bold text-[#E8833A] hover:text-[#D0722F] transition-colors"
+            >
+              {expanded ? <><ChevronUp size={12}/> Less</> : <><ChevronDown size={12}/> More</>}
+            </button>
+          )}
         </div>
-      </div>
-
-      {/* Subtle indicator for frequency in background */}
-      <div className="absolute top-[-10px] right-[-10px] opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
-        <Calendar size={80} />
+        
+        {/* Right checkbox */}
+        <button
+          onClick={() => onToggle(task.id)}
+          aria-label={isCompleted ? "Unmark Task" : "Complete Task"}
+          className={`w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-300 shrink-0 ${
+            isCompleted 
+              ? 'bg-[#E8833A] border-[#E8833A] shadow-lg shadow-orange-200 dark:shadow-orange-900/30' 
+              : 'bg-white dark:bg-[#2D2A40] border-[#D5CFC8] dark:border-[#4A4560] hover:border-[#E8833A]'
+          }`}
+        >
+          {isCompleted ? (
+            <Check size={18} className="text-white" strokeWidth={3} />
+          ) : (
+            <div className="w-4 h-4 rounded-full" />
+          )}
+        </button>
       </div>
     </div>
   );

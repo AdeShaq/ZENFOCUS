@@ -2,19 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
+  --color-bg: #F5F0EB;
+  --color-card: #FFFFFF;
+  --color-accent: #E8833A;
+  --color-accent-light: #FDEBD3;
+  --color-text: #2D2A26;
+  --color-muted: #9B9590;
+
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--color-text);
+  background-color: var(--color-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.dark {
+  --color-bg: #1A1A2E;
+  --color-card: #222244;
+  --color-accent: #E8833A;
+  --color-accent-light: #3D2D1A;
+  --color-text: #F0EDE8;
+  --color-muted: #7A7580;
 }
 
 body {

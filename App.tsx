@@ -289,11 +289,11 @@ const App: React.FC = () => {
   const renderToday = () => (
     <>
       {checkInModal}
-      <header className="px-6 pt-10 pb-4 bg-stone-50 dark:bg-slate-900 transition-colors duration-300 rounded-b-[3rem] shadow-sm">
+      <header className="px-6 pt-10 pb-4 bg-white dark:bg-[#222244] transition-colors duration-300 rounded-b-[2.5rem] shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight dark:text-white">Hi, Xeno 👋</h1>
-            <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-widest mt-0.5">
+            <h1 className="text-2xl font-bold tracking-tight text-[#2D2A26] dark:text-[#F0EDE8]">Hi, Xeno 👋</h1>
+            <p className="text-[#9B9590] dark:text-[#7A7580] text-xs font-semibold uppercase tracking-widest mt-0.5">
               {format(currentTime, 'EEEE, MMM do')}
             </p>
           </div>
@@ -301,7 +301,7 @@ const App: React.FC = () => {
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               aria-label="Toggle Theme"
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all active:scale-95 shadow-inner"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-[#F5F0EB] dark:bg-[#2D2A40] text-[#9B9590] dark:text-[#B0A8A0] transition-all active:scale-95"
             >
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -320,19 +320,19 @@ const App: React.FC = () => {
                   }
                 });
               }}
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95 transition-all shadow-inner hover:bg-stone-300 dark:hover:bg-slate-700"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-[#F5F0EB] dark:bg-[#2D2A40] text-[#9B9590] dark:text-[#B0A8A0] active:scale-95 transition-all"
             >
               <Bell size={20} />
             </button>
             <button
               aria-label="Hourly Check-In"
               onClick={() => triggerCheckIn()}
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95 transition-all shadow-inner hover:bg-stone-300 dark:hover:bg-slate-700" title="Check-In">
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-[#F5F0EB] dark:bg-[#2D2A40] text-[#9B9590] dark:text-[#B0A8A0] active:scale-95 transition-all" title="Check-In">
               <MessageCircle size={20} />
             </button>
             <button
               aria-label="Profile"
-              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-stone-200 dark:bg-slate-800 overflow-hidden active:scale-95 transition-all shadow-inner border border-black/5 dark:border-white/5"
+              className="w-10 h-10 flex items-center justify-center rounded-full overflow-hidden active:scale-95 transition-all border-2 border-[#E8833A]/30"
               onClick={() => setShowVerse(true)}
             >
               <img src="https://picsum.photos/seed/xeno/100" alt="Avatar" className="w-full h-full object-cover" />
@@ -343,44 +343,44 @@ const App: React.FC = () => {
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-black tracking-tighter dark:text-slate-100">
+              <span className="text-4xl font-black tracking-tighter text-[#2D2A26] dark:text-[#F0EDE8]">
                 {format(currentTime, 'hh:mm')}
-                <span className="text-sm font-bold opacity-40 ml-1 uppercase">{format(currentTime, 'a')}</span>
+                <span className="text-sm font-bold text-[#9B9590] ml-1 uppercase">{format(currentTime, 'a')}</span>
               </span>
-              <span className="text-xs font-mono font-bold text-indigo-500 dark:text-indigo-400 opacity-50 w-6">
+              <span className="text-xs font-mono font-bold text-[#E8833A] opacity-50 w-6">
                 :{format(currentTime, 'ss')}
               </span>
             </div>
             {doingNowTask ? (
               <div className="flex items-center gap-1.5 mt-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 truncate max-w-[200px]">
+                <span className="w-2 h-2 rounded-full bg-[#E8833A] animate-pulse shrink-0" />
+                <span className="text-xs font-black text-[#E8833A] truncate max-w-[200px]">
                   Now: {doingNowTask.title}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 mt-1">
-                <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
-                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">No active task right now</span>
+                <span className="w-2 h-2 rounded-full bg-[#D5CFC8] dark:bg-[#4A4560] shrink-0" />
+                <span className="text-[11px] font-medium text-[#9B9590] dark:text-[#7A7580]">No active task right now</span>
               </div>
             )}
           </div>
 
           {nextTaskInfo && (
-            <div className={`flex flex-col items-center justify-center gap-1 px-6 py-4 rounded-3xl border shadow-lg transition-all transform hover:scale-105 ${nextTaskInfo.isSoon
-              ? 'bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400 text-white animate-pulse shadow-rose-500/30'
-              : 'bg-stone-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'
+            <div className={`flex flex-col items-center justify-center gap-1 px-6 py-4 rounded-2xl border transition-all transform hover:scale-105 ${nextTaskInfo.isSoon
+              ? 'bg-[#E8833A] border-[#D0722F] text-white animate-pulse shadow-lg shadow-orange-200 dark:shadow-orange-900/30'
+              : 'bg-white dark:bg-[#2D2A40] border-[#E8E0D8] dark:border-[#3D3960]'
               }`}>
               <div className="flex items-center gap-2 mb-1">
-                <Timer size={18} className={nextTaskInfo.isSoon ? 'text-white' : 'text-indigo-500'} />
-                <span className={`text-xs font-black uppercase tracking-widest ${nextTaskInfo.isSoon ? 'text-white/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                <Timer size={18} className={nextTaskInfo.isSoon ? 'text-white' : 'text-[#E8833A]'} />
+                <span className={`text-xs font-black uppercase tracking-widest ${nextTaskInfo.isSoon ? 'text-white/90' : 'text-[#9B9590] dark:text-[#7A7580]'}`}>
                   Next Task
                 </span>
               </div>
-              <span className={`text-3xl font-black tracking-tighter ${nextTaskInfo.isSoon ? 'text-white' : 'text-slate-800 dark:text-slate-100'}`}>
+              <span className={`text-3xl font-black tracking-tighter ${nextTaskInfo.isSoon ? 'text-white' : 'text-[#2D2A26] dark:text-[#F0EDE8]'}`}>
                 {nextTaskInfo.countdown}
               </span>
-              <span className={`text-xs font-medium max-w-[150px] truncate ${nextTaskInfo.isSoon ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}>
+              <span className={`text-xs font-medium max-w-[150px] truncate ${nextTaskInfo.isSoon ? 'text-white/80' : 'text-[#9B9590] dark:text-[#7A7580]'}`}>
                 {nextTaskInfo.task.title}
               </span>
             </div>
@@ -391,7 +391,8 @@ const App: React.FC = () => {
       </header>
 
       <main className="flex-1 overflow-y-auto px-6 py-4 no-scrollbar pb-32">
-        <div className="mb-8 p-6 bg-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100 dark:shadow-indigo-900/10 relative overflow-hidden">
+        {/* Progress Card */}
+        <div className="mb-8 p-6 bg-gradient-to-br from-[#E8833A] to-[#D0722F] rounded-[2rem] text-white shadow-lg shadow-orange-100 dark:shadow-orange-900/10 relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-lg font-semibold mb-1">Your Daily Progress</h2>
             <p className="text-xs opacity-80 mb-4">{completedToday.length} of {totalTasksTodayCount} tasks completed</p>
@@ -408,14 +409,15 @@ const App: React.FC = () => {
           <TrendingUp className="absolute bottom-[-10px] right-[-10px] text-white opacity-10 w-24 h-24 rotate-12" />
         </div>
 
+        {/* Category Filter */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar mb-6 pb-2">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-2xl whitespace-nowrap text-xs font-bold transition-all duration-200 border ${activeCategory === cat
-                ? 'bg-slate-900 dark:bg-indigo-500 text-white border-transparent shadow-lg'
-                : 'bg-stone-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-700 hover:border-slate-300'
+              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs font-bold transition-all duration-200 border ${activeCategory === cat
+                ? 'bg-[#2D2A26] dark:bg-[#E8833A] text-white border-transparent shadow-md'
+                : 'bg-white dark:bg-[#222244] text-[#9B9590] dark:text-[#B0A8A0] border-[#E8E0D8] dark:border-[#333355] hover:border-[#E8833A]/50'
                 }`}
             >
               {cat}
@@ -490,14 +492,14 @@ const App: React.FC = () => {
 
 
         {/* End of Day Review — Task-by-Task */}
-        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800/50">
+        <div className="mt-8 pt-8 border-t border-[#E8E0D8] dark:border-[#333355]">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 flex items-center justify-center p-1.5 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-950/30 text-violet-500 flex items-center justify-center p-1.5">
               <FileText />
             </div>
             <div>
-              <h3 className="text-slate-800 dark:text-slate-100 font-bold leading-tight">End of Day Review</h3>
-              <p className="text-[11px] text-slate-400 font-medium">Uncompleted tasks — tell us why</p>
+              <h3 className="text-[#2D2A26] dark:text-[#F0EDE8] font-bold leading-tight">End of Day Review</h3>
+              <p className="text-[11px] text-[#9B9590] font-medium">Uncompleted tasks — tell us why</p>
             </div>
           </div>
           {(() => {
@@ -505,7 +507,7 @@ const App: React.FC = () => {
             const uncompleted = allDayTasks.filter(t => !completedToday.includes(t.id));
             if (uncompleted.length === 0) {
               return (
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 rounded-2xl p-4 text-center">
+                <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/30 rounded-2xl p-4 text-center">
                   <p className="text-emerald-700 dark:text-emerald-300 text-sm font-bold">🎉 All tasks completed today!</p>
                 </div>
               );
@@ -513,15 +515,15 @@ const App: React.FC = () => {
             return (
               <div className="space-y-3">
                 {uncompleted.map(task => (
-                  <div key={task.id} className="bg-stone-50 dark:bg-slate-800/80 rounded-2xl p-4 border border-black/5 dark:border-white/5">
+                  <div key={task.id} className="bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-2xl p-4 border border-[#E8E0D8] dark:border-[#333355]">
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`w-1.5 h-6 rounded-full ${task.color?.split(' ')[0] || 'bg-slate-400'}`} />
-                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200 leading-tight">{task.title}</p>
+                      <p className="text-sm font-bold text-[#2D2A26] dark:text-[#F0EDE8] leading-tight">{task.title}</p>
                     </div>
                     <input
                       type="text"
                       placeholder="Why wasn't this done?"
-                      className="w-full bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500/30 font-medium text-slate-600 dark:text-slate-300 placeholder:text-slate-400"
+                      className="w-full bg-white dark:bg-[#222244] border border-[#E8E0D8] dark:border-[#333355] rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#E8833A]/30 font-medium text-[#2D2A26] dark:text-[#F0EDE8] placeholder:text-[#9B9590]"
                       value={progress.missedTaskReasons?.[dateKey]?.[task.id] || ''}
                       onChange={e => {
                         setProgress(prev => ({
@@ -542,7 +544,7 @@ const App: React.FC = () => {
             );
           })()}
           <textarea
-            className="w-full mt-4 bg-stone-50 dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-4 text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-purple-500/50 transition-all resize-none shadow-inner"
+            className="w-full mt-4 bg-[#F5F0EB] dark:bg-[#2D2A40] border border-[#E8E0D8] dark:border-[#333355] rounded-2xl p-4 text-sm font-medium text-[#2D2A26] dark:text-[#F0EDE8] placeholder:text-[#9B9590] outline-none focus:ring-2 focus:ring-[#E8833A]/30 transition-all resize-none"
             rows={3}
             placeholder="Overall reflections — How did today go?"
             value={progress.eodReviews?.[dateKey] || ''}
@@ -567,20 +569,20 @@ const App: React.FC = () => {
 
   const renderPlanner = () => (
     <main className="flex-1 overflow-y-auto px-6 pt-12 no-scrollbar pb-32">
-      <h1 className="text-3xl font-black mb-1 dark:text-white tracking-tight">Task Planner</h1>
-      <p className="text-slate-400 dark:text-slate-500 mb-4 font-medium text-sm">Organize your long-term success</p>
+      <h1 className="text-3xl font-black mb-1 text-[#2D2A26] dark:text-[#F0EDE8] tracking-tight">Task Planner</h1>
+      <p className="text-[#9B9590] dark:text-[#7A7580] mb-4 font-medium text-sm">Organize your long-term success</p>
 
       {/* Sub-Tab Toggle */}
-      <div className="flex items-center gap-2 mb-8 bg-stone-100 dark:bg-slate-800 p-1 rounded-2xl">
+      <div className="flex items-center gap-2 mb-8 bg-[#EDE8E2] dark:bg-[#2D2A40] p-1 rounded-full">
         <button 
           onClick={() => setPlannerSubTab('schedule')} 
-          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all ${plannerSubTab === 'schedule' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
+          className={`flex-1 py-2.5 rounded-full text-xs font-black transition-all ${plannerSubTab === 'schedule' ? 'bg-white dark:bg-[#3D3960] text-[#2D2A26] dark:text-white shadow-sm' : 'text-[#9B9590] dark:text-[#7A7580]'}`}
         >
           📋 Schedule
         </button>
         <button 
           onClick={() => setPlannerSubTab('workouts')} 
-          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all ${plannerSubTab === 'workouts' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
+          className={`flex-1 py-2.5 rounded-full text-xs font-black transition-all ${plannerSubTab === 'workouts' ? 'bg-white dark:bg-[#3D3960] text-[#2D2A26] dark:text-white shadow-sm' : 'text-[#9B9590] dark:text-[#7A7580]'}`}
         >
           🏋️ Workouts
         </button>
@@ -590,7 +592,7 @@ const App: React.FC = () => {
         <WorkoutView />
       ) : (
       <>
-      {/* Quick Navigation — each button toggles its section */}
+      {/* Quick Navigation */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6">
         {[
           { label: '📅 Classes', key: 'classes' },
@@ -602,10 +604,10 @@ const App: React.FC = () => {
           <button
             key={item.key}
             onClick={() => setActivePlannerSection(activePlannerSection === item.key ? null : item.key)}
-            className={`px-4 py-2 rounded-2xl text-[11px] font-black whitespace-nowrap border transition-all shadow-sm ${
+            className={`px-4 py-2 rounded-full text-[11px] font-black whitespace-nowrap border transition-all ${
               activePlannerSection === item.key
-                ? 'bg-indigo-600 text-white border-indigo-600 scale-105'
-                : 'bg-white dark:bg-slate-800 border-black/5 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-stone-100 dark:hover:bg-slate-700'
+                ? 'bg-[#E8833A] text-white border-[#E8833A] shadow-md'
+                : 'bg-white dark:bg-[#222244] border-[#E8E0D8] dark:border-[#333355] text-[#9B9590] dark:text-[#B0A8A0] hover:border-[#E8833A]/50'
             }`}
           >
             {item.label}
@@ -615,14 +617,14 @@ const App: React.FC = () => {
 
       {!activePlannerSection && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center mb-4 text-indigo-400">
+          <div className="w-16 h-16 bg-[#FDEBD3] dark:bg-[#3D2D1A] rounded-3xl flex items-center justify-center mb-4 text-[#E8833A]">
             <ListTodo size={28} />
           </div>
-          <p className="text-slate-500 dark:text-slate-400 font-semibold text-sm">Select a category above to view &amp; manage tasks</p>
+          <p className="text-[#9B9590] dark:text-[#7A7580] font-semibold text-sm">Select a category above to view &amp; manage tasks</p>
         </div>
       )}
 
-      {/* CLASSES SECTION */}
+      {/* CLASSES SECTION — Proper Timetable Grid */}
       {activePlannerSection === 'classes' && (() => {
         const classTasks = tasks.filter(t => t.category === TaskCategory.ACADEMICS);
         const startEdit = (t: TaskDefinition) => { setPlannerEditingId(t.id); setPlannerEditTask({ ...t }); };
@@ -638,49 +640,89 @@ const App: React.FC = () => {
           setTasks(prev => [...prev, { id, title: 'New Class', description: '', category: TaskCategory.ACADEMICS, frequency: TaskFrequency.WEEKLY, time: '', daysOfWeek: [], color: 'bg-blue-100' }]);
           startEdit({ id, title: 'New Class', description: '', category: TaskCategory.ACADEMICS, frequency: TaskFrequency.WEEKLY, time: '', daysOfWeek: [], color: 'bg-blue-100' } as TaskDefinition);
         };
+
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        const dayColors = ['bg-rose-100 dark:bg-rose-900/30 border-l-rose-400', 'bg-sky-100 dark:bg-sky-900/30 border-l-sky-400', 'bg-emerald-100 dark:bg-emerald-900/30 border-l-emerald-400', 'bg-violet-100 dark:bg-violet-900/30 border-l-violet-400', 'bg-amber-100 dark:bg-amber-900/30 border-l-amber-400'];
+
         return (
-          <section className="mb-10 animate-in fade-in duration-200">
+          <section className="mb-10">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-2xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex items-center justify-center shadow-sm"><CalendarIcon size={18} /></div>
-                <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Weekly Classes</h2>
+                <div className="w-9 h-9 rounded-full bg-[#FDEBD3] dark:bg-[#3D2D1A] text-[#E8833A] flex items-center justify-center"><CalendarIcon size={18} /></div>
+                <h2 className="text-xl font-black text-[#2D2A26] dark:text-[#F0EDE8]">Weekly Timetable</h2>
               </div>
-              <button onClick={addTask} className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-[11px] font-black shadow hover:bg-indigo-700">+ Add</button>
+              <button onClick={addTask} className="px-3 py-1.5 bg-[#E8833A] text-white rounded-full text-[11px] font-black shadow hover:bg-[#D0722F]">+ Add</button>
             </div>
-            <div className="space-y-3">
-              {classTasks.map(task => plannerEditingId === task.id ? (
-                <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border-2 border-indigo-400 shadow-lg">
-                  <input className="w-full mb-2 font-bold text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.title || ''} onChange={e => setPlannerEditTask(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
-                  <input className="w-full mb-2 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.description || ''} onChange={e => setPlannerEditTask(p => ({ ...p, description: e.target.value }))} placeholder="Description" />
+
+            {/* Edit form overlay */}
+            {plannerEditingId && (() => {
+              const task = classTasks.find(t => t.id === plannerEditingId);
+              if (!task) return null;
+              return (
+                <div className="bg-white dark:bg-[#222244] p-4 rounded-2xl border-2 border-[#E8833A] shadow-lg mb-4">
+                  <input className="w-full mb-2 font-bold text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={plannerEditTask.title || ''} onChange={e => setPlannerEditTask(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
+                  <input className="w-full mb-2 text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={plannerEditTask.description || ''} onChange={e => setPlannerEditTask(p => ({ ...p, description: e.target.value }))} placeholder="Description" />
                   <div className="flex gap-2 mb-2">
-                    <input type="time" className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.time || ''} onChange={e => setPlannerEditTask(p => ({ ...p, time: e.target.value }))} />
-                    <input type="time" className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={(plannerEditTask as any).endTime || ''} onChange={e => setPlannerEditTask(p => ({ ...p, endTime: e.target.value }))} placeholder="End" />
+                    <input type="time" className="flex-1 text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={plannerEditTask.time || ''} onChange={e => setPlannerEditTask(p => ({ ...p, time: e.target.value }))} />
+                    <input type="time" className="flex-1 text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={(plannerEditTask as any).endTime || ''} onChange={e => setPlannerEditTask(p => ({ ...p, endTime: e.target.value }))} />
                   </div>
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d, i) => (
-                      <button key={d} onClick={() => setPlannerEditTask(p => { const days = p.daysOfWeek || []; return { ...p, daysOfWeek: days.includes(i+1) ? days.filter(x => x !== i+1) : [...days, i+1] }; })} className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${(plannerEditTask.daysOfWeek||[]).includes(i+1) ? 'bg-indigo-600 text-white' : 'bg-stone-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>{d}</button>
+                      <button key={d} onClick={() => setPlannerEditTask(p => { const days = p.daysOfWeek || []; return { ...p, daysOfWeek: days.includes(i+1) ? days.filter(x => x !== i+1) : [...days, i+1] }; })} className={`px-2.5 py-1 rounded-full text-[11px] font-black transition-all ${(plannerEditTask.daysOfWeek||[]).includes(i+1) ? 'bg-[#E8833A] text-white' : 'bg-[#EDE8E2] dark:bg-[#2D2A40] text-[#9B9590]'}`}>{d}</button>
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={saveEdit} className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-black">Save</button>
-                    <button onClick={() => setPlannerEditingId(null)} className="flex-1 py-2 bg-stone-200 dark:bg-slate-700 rounded-xl text-sm font-black dark:text-white">Cancel</button>
+                    <button onClick={saveEdit} className="flex-1 py-2 bg-[#E8833A] text-white rounded-xl text-sm font-black">Save</button>
+                    <button onClick={() => setPlannerEditingId(null)} className="flex-1 py-2 bg-[#EDE8E2] dark:bg-[#2D2A40] rounded-xl text-sm font-black text-[#2D2A26] dark:text-[#F0EDE8]">Cancel</button>
                   </div>
                 </div>
-              ) : (
-                <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-3">
-                  <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight">{task.title}</p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500">{task.time ? formatTime12Hour(task.time) : ''}{(task as any).endTime ? ` – ${formatTime12Hour((task as any).endTime)}` : ''} · {(task.daysOfWeek||[]).map(d=>['','Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]||'').join(', ')}</p>
+              );
+            })()}
+
+            {/* Timetable Grid */}
+            <div className="bg-white dark:bg-[#222244] rounded-2xl border border-[#E8E0D8] dark:border-[#333355] overflow-hidden shadow-sm">
+              {dayNames.map((dayName, dayIdx) => {
+                const dayNum = dayIdx + 1; // 1=Mon...5=Fri
+                const dayClasses = classTasks.filter(t => (t.daysOfWeek || []).includes(dayNum));
+                return (
+                  <div key={dayName} className={`border-b last:border-b-0 border-[#E8E0D8] dark:border-[#333355]`}>
+                    <div className="flex items-start">
+                      <div className="w-14 py-3 px-2 flex flex-col items-center justify-center shrink-0 border-r border-[#E8E0D8] dark:border-[#333355]">
+                        <span className="text-[10px] font-black uppercase text-[#9B9590] dark:text-[#7A7580]">{dayName}</span>
+                      </div>
+                      <div className="flex-1 py-2 px-2">
+                        {dayClasses.length === 0 ? (
+                          <p className="text-[11px] text-[#D5CFC8] dark:text-[#4A4560] italic py-1">No classes</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {dayClasses.map(task => (
+                              <div
+                                key={task.id}
+                                className={`${dayColors[dayIdx]} border-l-[3px] rounded-lg px-3 py-2 flex items-center justify-between gap-2 group cursor-pointer hover:shadow-sm transition-all`}
+                                onClick={() => startEdit(task)}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-bold text-[13px] text-[#2D2A26] dark:text-[#F0EDE8] leading-tight truncate">{task.title}</p>
+                                  <p className="text-[10px] text-[#9B9590] dark:text-[#B0A8A0] font-medium">
+                                    {task.time ? formatTime12Hour(task.time) : ''}
+                                    {(task as any).endTime ? ` – ${formatTime12Hour((task as any).endTime)}` : ''}
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }}
+                                  className="text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-black shrink-0"
+                                >✕</button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-1.5">
-                    <button onClick={() => startEdit(task)} className="p-2 rounded-xl bg-stone-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors text-xs font-black">Edit</button>
-                    <button onClick={() => deleteTask(task.id)} className="p-2 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 hover:bg-rose-100 transition-colors text-xs font-black">✕</button>
-                  </div>
-                </div>
-              ))}
-              {classTasks.length === 0 && <p className="text-center text-sm text-slate-400 py-4">No classes yet. Tap + Add to create one.</p>}
+                );
+              })}
             </div>
+            {classTasks.length === 0 && <p className="text-center text-sm text-[#9B9590] py-4 mt-2">No classes yet. Tap + Add to create one.</p>}
           </section>
         );
       })()}
@@ -704,49 +746,49 @@ const App: React.FC = () => {
         };
         const COLORS = ['bg-indigo-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100', 'bg-blue-100', 'bg-purple-100', 'bg-orange-100'];
         return (
-          <section key={freq} className="mb-10 animate-in fade-in duration-200">
+          <section key={freq} className="mb-10">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shadow-sm"><ListTodo size={18} /></div>
-                <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 capitalize">{freq.toLowerCase()} Habits</h2>
+                <div className="w-9 h-9 rounded-full bg-[#FDEBD3] dark:bg-[#3D2D1A] text-[#E8833A] flex items-center justify-center"><ListTodo size={18} /></div>
+                <h2 className="text-xl font-black text-[#2D2A26] dark:text-[#F0EDE8] capitalize">{freq.toLowerCase()} Habits</h2>
               </div>
-              <button onClick={addTask} className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-[11px] font-black shadow hover:bg-indigo-700">+ Add</button>
+              <button onClick={addTask} className="px-3 py-1.5 bg-[#E8833A] text-white rounded-full text-[11px] font-black shadow hover:bg-[#D0722F]">+ Add</button>
             </div>
             <div className="space-y-3">
               {freqTasks.map(task => plannerEditingId === task.id ? (
-                <div key={task.id} className="bg-white dark:bg-slate-800 p-4 rounded-[2rem] border-2 border-indigo-400 shadow-lg">
-                  <input className="w-full mb-2 font-bold text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.title || ''} onChange={e => setPlannerEditTask(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
-                  <input className="w-full mb-2 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.description || ''} onChange={e => setPlannerEditTask(p => ({ ...p, description: e.target.value }))} placeholder="Description" />
+                <div key={task.id} className="bg-white dark:bg-[#222244] p-4 rounded-2xl border-2 border-[#E8833A] shadow-lg">
+                  <input className="w-full mb-2 font-bold text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={plannerEditTask.title || ''} onChange={e => setPlannerEditTask(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
+                  <input className="w-full mb-2 text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={plannerEditTask.description || ''} onChange={e => setPlannerEditTask(p => ({ ...p, description: e.target.value }))} placeholder="Description" />
                   <div className="flex gap-2 mb-2">
-                    <input type="time" className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.time || ''} onChange={e => setPlannerEditTask(p => ({ ...p, time: e.target.value }))} />
-                    <select className="flex-1 text-sm bg-stone-100 dark:bg-slate-700 rounded-xl px-3 py-2 outline-none dark:text-white" value={plannerEditTask.category || TaskCategory.PRODUCTIVITY} onChange={e => setPlannerEditTask(p => ({ ...p, category: e.target.value as TaskCategory }))}>
+                    <input type="time" className="flex-1 text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={plannerEditTask.time || ''} onChange={e => setPlannerEditTask(p => ({ ...p, time: e.target.value }))} />
+                    <select className="flex-1 text-sm bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl px-3 py-2 outline-none text-[#2D2A26] dark:text-[#F0EDE8]" value={plannerEditTask.category || TaskCategory.PRODUCTIVITY} onChange={e => setPlannerEditTask(p => ({ ...p, category: e.target.value as TaskCategory }))}>
                       {Object.values(TaskCategory).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div className="flex gap-1.5 mb-3 flex-wrap">
                     {COLORS.map(c => (
-                      <button key={c} onClick={() => setPlannerEditTask(p => ({ ...p, color: c }))} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${c} ${plannerEditTask.color === c ? 'border-indigo-500 scale-110' : 'border-transparent'}`} />
+                      <button key={c} onClick={() => setPlannerEditTask(p => ({ ...p, color: c }))} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${c} ${plannerEditTask.color === c ? 'border-[#E8833A] scale-110' : 'border-transparent'}`} />
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={saveEdit} className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-black">Save</button>
-                    <button onClick={() => setPlannerEditingId(null)} className="flex-1 py-2 bg-stone-200 dark:bg-slate-700 rounded-xl text-sm font-black dark:text-white">Cancel</button>
+                    <button onClick={saveEdit} className="flex-1 py-2 bg-[#E8833A] text-white rounded-xl text-sm font-black">Save</button>
+                    <button onClick={() => setPlannerEditingId(null)} className="flex-1 py-2 bg-[#EDE8E2] dark:bg-[#2D2A40] rounded-xl text-sm font-black text-[#2D2A26] dark:text-[#F0EDE8]">Cancel</button>
                   </div>
                 </div>
               ) : (
-                <div key={task.id} className="bg-stone-50 dark:bg-slate-800 p-4 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm flex items-center gap-3">
+                <div key={task.id} className="bg-white dark:bg-[#222244] p-4 rounded-2xl border border-[#E8E0D8] dark:border-[#333355] shadow-sm flex items-center gap-3">
                   <div className={`w-1.5 h-10 rounded-full ${task.color.split(' ')[0]}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight truncate">{task.title}</p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500">{task.category}{task.time ? ` · ${formatTime12Hour(task.time)}` : ''}</p>
+                    <p className="font-black text-[#2D2A26] dark:text-[#F0EDE8] text-sm leading-tight truncate">{task.title}</p>
+                    <p className="text-[11px] text-[#9B9590] dark:text-[#7A7580]">{task.category}{task.time ? ` · ${formatTime12Hour(task.time)}` : ''}</p>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
-                    <button onClick={() => startEdit(task)} className="p-2 rounded-xl bg-stone-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors text-xs font-black">Edit</button>
+                    <button onClick={() => startEdit(task)} className="p-2 rounded-xl bg-[#EDE8E2] dark:bg-[#2D2A40] text-[#9B9590] hover:bg-[#FDEBD3] dark:hover:bg-[#3D2D1A] transition-colors text-xs font-black">Edit</button>
                     <button onClick={() => deleteTask(task.id)} className="p-2 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 hover:bg-rose-100 transition-colors text-xs font-black">✕</button>
                   </div>
                 </div>
               ))}
-              {freqTasks.length === 0 && <p className="text-center text-sm text-slate-400 py-4">No {freq.toLowerCase()} habits. Tap + Add to create one.</p>}
+              {freqTasks.length === 0 && <p className="text-center text-sm text-[#9B9590] py-4">No {freq.toLowerCase()} habits. Tap + Add to create one.</p>}
             </div>
           </section>
         );
@@ -764,56 +806,56 @@ const App: React.FC = () => {
 
     return (
     <main className="flex-1 overflow-y-auto px-6 pt-12 no-scrollbar pb-32">
-      <h1 className="text-3xl font-black mb-1 dark:text-white tracking-tight">Performance</h1>
-      <p className="text-slate-400 dark:text-slate-500 mb-8 font-medium text-sm">Your journey tracked in data</p>
+      <h1 className="text-3xl font-black mb-1 text-[#2D2A26] dark:text-[#F0EDE8] tracking-tight">Performance</h1>
+      <p className="text-[#9B9590] dark:text-[#7A7580] mb-8 font-medium text-sm">Your journey tracked in data</p>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm transition-all">
-          <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 rounded-2xl flex items-center justify-center mb-4">
+        <div className="bg-white dark:bg-[#222244] p-6 rounded-2xl border border-[#E8E0D8] dark:border-[#333355] shadow-sm">
+          <div className="w-12 h-12 bg-[#FDEBD3] dark:bg-[#3D2D1A] text-[#E8833A] rounded-2xl flex items-center justify-center mb-4">
             <CheckCircle2 size={24} />
           </div>
-          <span className="text-3xl font-black block dark:text-white tracking-tighter">{stats.allCompletedCount}</span>
-          <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Done</span>
+          <span className="text-3xl font-black block text-[#2D2A26] dark:text-[#F0EDE8] tracking-tighter">{stats.allCompletedCount}</span>
+          <span className="text-[10px] font-black text-[#9B9590] dark:text-[#7A7580] uppercase tracking-widest">Total Done</span>
         </div>
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm transition-all">
-          <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 rounded-2xl flex items-center justify-center mb-4">
+        <div className="bg-white dark:bg-[#222244] p-6 rounded-2xl border border-[#E8E0D8] dark:border-[#333355] shadow-sm">
+          <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 rounded-2xl flex items-center justify-center mb-4">
             <TrendingUp size={24} />
           </div>
-          <span className="text-3xl font-black block dark:text-white tracking-tighter">{stats.consistency}%</span>
-          <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Consistency</span>
+          <span className="text-3xl font-black block text-[#2D2A26] dark:text-[#F0EDE8] tracking-tighter">{stats.consistency}%</span>
+          <span className="text-[10px] font-black text-[#9B9590] dark:text-[#7A7580] uppercase tracking-widest">Consistency</span>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
-        <h3 className="font-black text-lg mb-4 dark:text-white tracking-tight">Activity Insights</h3>
+      <div className="bg-white dark:bg-[#222244] p-6 rounded-2xl border border-[#E8E0D8] dark:border-[#333355] shadow-sm mb-8">
+        <h3 className="font-black text-lg mb-4 text-[#2D2A26] dark:text-[#F0EDE8] tracking-tight">Activity Insights</h3>
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">Days Tracked</span>
-          <span className="font-black text-indigo-600 dark:text-indigo-400">{stats.daysTracked} days</span>
+          <span className="text-xs text-[#9B9590] dark:text-[#7A7580] font-black uppercase tracking-widest">Days Tracked</span>
+          <span className="font-black text-[#E8833A]">{stats.daysTracked} days</span>
         </div>
-        <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
-          <div className="h-full bg-indigo-500 transition-all duration-1000" style={{ width: `${Math.min(100, stats.daysTracked * 5)}%` }} />
+        <div className="w-full h-2 bg-[#EDE8E2] dark:bg-[#2D2A40] rounded-full overflow-hidden">
+          <div className="h-full bg-[#E8833A] transition-all duration-1000 rounded-full" style={{ width: `${Math.min(100, stats.daysTracked * 5)}%` }} />
         </div>
       </div>
 
       {/* Hourly Check-In History */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
+      <div className="bg-white dark:bg-[#222244] p-6 rounded-2xl border border-[#E8E0D8] dark:border-[#333355] shadow-sm mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <MessageCircle size={16} className="text-indigo-500" />
-          <h3 className="font-black text-lg dark:text-white tracking-tight">Check-In History</h3>
+          <MessageCircle size={16} className="text-[#E8833A]" />
+          <h3 className="font-black text-lg text-[#2D2A26] dark:text-[#F0EDE8] tracking-tight">Check-In History</h3>
         </div>
         {recentCheckins.length === 0 ? (
-          <p className="text-sm text-slate-400 italic">No check-ins recorded yet.</p>
+          <p className="text-sm text-[#9B9590] italic">No check-ins recorded yet.</p>
         ) : (
           <div className="space-y-3 max-h-64 overflow-y-auto no-scrollbar">
             {recentCheckins.map((ci) => (
-              <div key={ci.id} className="bg-stone-50 dark:bg-slate-900 rounded-2xl p-3 border border-black/5 dark:border-white/5">
+              <div key={ci.id} className="bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl p-3 border border-[#E8E0D8] dark:border-[#333355]">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">
+                  <span className="text-[10px] font-black text-[#E8833A] uppercase tracking-widest">
                     {format(new Date(ci.timestamp), 'MMM d · h:mm a')}
                   </span>
                   <span className="text-xs">{ci.feeling}</span>
                 </div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{ci.doing || '—'}</p>
+                <p className="text-sm font-medium text-[#2D2A26] dark:text-[#F0EDE8]">{ci.doing || '—'}</p>
                 {ci.suggestion && <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">💡 {ci.suggestion}</p>}
               </div>
             ))}
@@ -822,19 +864,19 @@ const App: React.FC = () => {
       </div>
 
       {/* EOD Review History */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
+      <div className="bg-white dark:bg-[#222244] p-6 rounded-2xl border border-[#E8E0D8] dark:border-[#333355] shadow-sm mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <FileText size={16} className="text-purple-500" />
-          <h3 className="font-black text-lg dark:text-white tracking-tight">Daily Reviews</h3>
+          <FileText size={16} className="text-violet-500" />
+          <h3 className="font-black text-lg text-[#2D2A26] dark:text-[#F0EDE8] tracking-tight">Daily Reviews</h3>
         </div>
         {eodEntries.length === 0 ? (
-          <p className="text-sm text-slate-400 italic">No reviews yet.</p>
+          <p className="text-sm text-[#9B9590] italic">No reviews yet.</p>
         ) : (
           <div className="space-y-3 max-h-64 overflow-y-auto no-scrollbar">
             {eodEntries.map(([dk, text]) => (
-              <div key={dk} className="bg-stone-50 dark:bg-slate-900 rounded-2xl p-3 border border-black/5 dark:border-white/5">
-                <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest block mb-1">{dk}</span>
-                <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{text}</p>
+              <div key={dk} className="bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl p-3 border border-[#E8E0D8] dark:border-[#333355]">
+                <span className="text-[10px] font-black text-violet-500 uppercase tracking-widest block mb-1">{dk}</span>
+                <p className="text-sm text-[#2D2A26] dark:text-[#F0EDE8] font-medium leading-relaxed">{text}</p>
               </div>
             ))}
           </div>
@@ -842,27 +884,27 @@ const App: React.FC = () => {
       </div>
 
       {/* Missed Task Reasons History */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
+      <div className="bg-white dark:bg-[#222244] p-6 rounded-2xl border border-[#E8E0D8] dark:border-[#333355] shadow-sm mb-8">
         <div className="flex items-center gap-2 mb-4">
           <ListTodo size={16} className="text-rose-500" />
-          <h3 className="font-black text-lg dark:text-white tracking-tight">Missed Task Reasons</h3>
+          <h3 className="font-black text-lg text-[#2D2A26] dark:text-[#F0EDE8] tracking-tight">Missed Task Reasons</h3>
         </div>
         {missedEntries.length === 0 ? (
-          <p className="text-sm text-slate-400 italic">No missed task records yet.</p>
+          <p className="text-sm text-[#9B9590] italic">No missed task records yet.</p>
         ) : (
           <div className="space-y-3 max-h-64 overflow-y-auto no-scrollbar">
             {missedEntries.map(([dk, reasons]) => {
               const entries = Object.entries(reasons).filter(([,v]) => v);
               if (entries.length === 0) return null;
               return (
-                <div key={dk} className="bg-stone-50 dark:bg-slate-900 rounded-2xl p-3 border border-black/5 dark:border-white/5">
+                <div key={dk} className="bg-[#F5F0EB] dark:bg-[#2D2A40] rounded-xl p-3 border border-[#E8E0D8] dark:border-[#333355]">
                   <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest block mb-2">{dk}</span>
                   {entries.map(([taskId, reason]) => {
                     const task = tasks.find(t => t.id === taskId);
                     return (
                       <div key={taskId} className="flex items-start gap-2 mb-1.5 last:mb-0">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 shrink-0">{task?.title || taskId}:</span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{reason}</span>
+                        <span className="text-xs font-bold text-[#2D2A26] dark:text-[#F0EDE8] shrink-0">{task?.title || taskId}:</span>
+                        <span className="text-xs text-[#9B9590] dark:text-[#7A7580]">{reason}</span>
                       </div>
                     );
                   })}
@@ -873,7 +915,7 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <p className="text-sm text-slate-400 dark:text-slate-500 leading-relaxed italic border-l-4 border-indigo-200 dark:border-indigo-800 pl-4 py-1">
+      <p className="text-sm text-[#9B9590] dark:text-[#7A7580] leading-relaxed italic border-l-4 border-[#E8833A]/30 pl-4 py-1">
         "The secret of your future is hidden in your daily routine."
       </p>
     </main>
@@ -881,7 +923,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-stone-200 dark:bg-slate-950 transition-colors duration-500 relative overflow-hidden">
+    <div className="flex flex-col h-screen max-w-md mx-auto bg-[#F5F0EB] dark:bg-[#1A1A2E] transition-colors duration-500 relative overflow-hidden">
       {currentTab === 'Today' && renderToday()}
       {currentTab === 'Planner' && renderPlanner()}
       {currentTab === 'Notes' && <NotesView notes={notes} setNotes={setNotes} />}
@@ -892,39 +934,39 @@ const App: React.FC = () => {
       <NotificationManager />
       {verseModal}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-100 dark:border-slate-800/50 px-2 sm:px-6 py-4 z-20">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#222244]/95 backdrop-blur-2xl border-t border-[#E8E0D8] dark:border-[#333355] px-2 sm:px-6 py-4 z-20">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button
             onClick={() => setCurrentTab('Today')}
-            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Today' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
+            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Today' ? 'text-[#E8833A] scale-110' : 'text-[#9B9590] dark:text-[#7A7580]'}`}
           >
             <LayoutGrid size={22} className={currentTab === 'Today' ? 'stroke-[2.5px]' : 'stroke-2'} />
             <span className="text-[9px] font-black uppercase tracking-tighter">Today</span>
           </button>
           <button
             onClick={() => setCurrentTab('Planner')}
-            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Planner' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
+            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Planner' ? 'text-[#E8833A] scale-110' : 'text-[#9B9590] dark:text-[#7A7580]'}`}
           >
             <CalendarIcon size={22} className={currentTab === 'Planner' ? 'stroke-[2.5px]' : 'stroke-2'} />
             <span className="text-[9px] font-black uppercase tracking-tighter">Planner</span>
           </button>
           <button
             onClick={() => setCurrentTab('Notes')}
-            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Notes' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
+            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Notes' ? 'text-[#E8833A] scale-110' : 'text-[#9B9590] dark:text-[#7A7580]'}`}
           >
             <FileText size={22} className={currentTab === 'Notes' ? 'stroke-[2.5px]' : 'stroke-2'} />
             <span className="text-[9px] font-black uppercase tracking-tighter">Notes</span>
           </button>
           <button
             onClick={() => setCurrentTab('Finances')}
-            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Finances' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
+            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Finances' ? 'text-[#E8833A] scale-110' : 'text-[#9B9590] dark:text-[#7A7580]'}`}
           >
             <Wallet size={22} className={currentTab === 'Finances' ? 'stroke-[2.5px]' : 'stroke-2'} />
             <span className="text-[9px] font-black uppercase tracking-tighter">Finances</span>
           </button>
           <button
             onClick={() => setCurrentTab('Stats')}
-            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Stats' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 dark:text-slate-600'}`}
+            className={`flex flex-col items-center gap-1.5 transition-all ${currentTab === 'Stats' ? 'text-[#E8833A] scale-110' : 'text-[#9B9590] dark:text-[#7A7580]'}`}
           >
             <TrendingUp size={22} className={currentTab === 'Stats' ? 'stroke-[2.5px]' : 'stroke-2'} />
             <span className="text-[9px] font-black uppercase tracking-tighter">Stats</span>
