@@ -27,7 +27,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isCompleted, onToggle 
                 {task.category}
               </span>
               {task.time && (
-                <span className="flex items-center gap-1 text-[10px] font-black opacity-60 whitespace-nowrap">
+                <span className="flex items-center gap-1 text-[10px] font-black text-slate-700 dark:text-slate-200 opacity-60 whitespace-nowrap">
                   <Clock size={12} className="stroke-[2.5px]" /> {formatTime12Hour(task.time)}
                   {task.endTime && <span className="opacity-70"> – {formatTime12Hour(task.endTime)}</span>}
                 </span>

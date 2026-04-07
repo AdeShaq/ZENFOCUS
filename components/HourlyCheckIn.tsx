@@ -164,6 +164,13 @@ export const useHourlyCheckIn = (currentTaskTitle?: string) => {
           
           import('../utils').then(({ sendNotification }) => {
             sendNotification('ZenFocus Check-In 🌟', body);
+            
+            // Bi-hourly water reminder (every even hour)
+            if (now.getHours() % 2 === 0) {
+              setTimeout(() => {
+                sendNotification('Hydration Check 💧', 'Time to take a sachet of water! You need 3-5 daily. Track it in the app!');
+              }, 4000); // Send 4 seconds after checkin
+            }
           });
           
           setShowModal(true);
