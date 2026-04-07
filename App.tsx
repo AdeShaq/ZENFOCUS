@@ -38,7 +38,7 @@ const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [plannerSubTab, setPlannerSubTab] = useState<'schedule' | 'workouts'>('schedule');
   const [showVerse, setShowVerse] = useState(false);
-  const [activePlannerSection, setActivePlannerSection] = useState<string | null>(null);
+  const [activePlannerSection, setActivePlannerSection] = useState<string | null>('classes');
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('zenfocus_theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -52,7 +52,6 @@ const App: React.FC = () => {
   const [finances, setFinances] = useLocalStorage<FinanceEntry[]>('zenfocus_finances', APRIL_2026_FINANCES);
   const [notes, setNotes] = useLocalStorage<Note[]>('zenfocus_notes', INITIAL_NOTES);
   const [progress, setProgress] = useLocalStorage<UserProgress>('zenfocus_progress', { completedTaskIds: {}, missedTaskReasons: {}, eodReviews: {}, waterSachets: {} });
-  const [checkins] = useLocalStorage<any[]>('zenfocus_checkins', []);
 
   // Track sent notifications
   const [sentNotifications] = useState<Set<string>>(new Set());
@@ -490,64 +489,68 @@ const App: React.FC = () => {
         </div>
 
 
-        {/* End of Day Review */}
+        {/* End of Day Review — Task-by-Task */}
         <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800/50">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 flex items-center justify-center p-1.5 shadow-sm">
               <FileText />
             </div>
-            <h3 className="text-slate-800 dark:text-slate-100 font-bold">End of Day Review</h3>
+            <div>
+              <h3 className="text-slate-800 dark:text-slate-100 font-bold leading-tight">End of Day Review</h3>
+              <p className="text-[11px] text-slate-400 font-medium">Uncompleted tasks — tell us why</p>
+            </div>
           </div>
-
-          {/* Missed Tasks Context */}
-          {todaysTasks.length > 0 && (
-            <div className="mb-6 space-y-3">
-              <h4 className="text-xs font-black uppercase text-slate-400">Pending Tasks Explanation</h4>
-              {todaysTasks.map(task => (
-                <div key={`missed-${task.id}`} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold dark:text-slate-200">{task.title}</span>
-                    <button 
-                      onClick={() => toggleTask(task.id)}
-                      className="text-[10px] font-black uppercase bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-lg"
-                    >
-                      Did It ✓
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Why was this missed today?"
-                    className="w-full text-xs bg-stone-50 dark:bg-slate-900 border border-black/5 dark:border-white/5 px-3 py-2 rounded-xl outline-none text-slate-600 dark:text-slate-300 focus:ring-1 focus:ring-purple-500 placeholder:text-slate-400"
-                    value={progress.missedTaskReasons?.[dateKey]?.[task.id] || ''}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setProgress(prev => {
-                        const dateReasons = prev.missedTaskReasons?.[dateKey] || {};
-                        return {
+          {(() => {
+            const allDayTasks = filterTasksForDate(tasks, selectedDate);
+            const uncompleted = allDayTasks.filter(t => !completedToday.includes(t.id));
+            if (uncompleted.length === 0) {
+              return (
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 rounded-2xl p-4 text-center">
+                  <p className="text-emerald-700 dark:text-emerald-300 text-sm font-bold">🎉 All tasks completed today!</p>
+                </div>
+              );
+            }
+            return (
+              <div className="space-y-3">
+                {uncompleted.map(task => (
+                  <div key={task.id} className="bg-stone-50 dark:bg-slate-800/80 rounded-2xl p-4 border border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-1.5 h-6 rounded-full ${task.color?.split(' ')[0] || 'bg-slate-400'}`} />
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200 leading-tight">{task.title}</p>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Why wasn't this done?"
+                      className="w-full bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500/30 font-medium text-slate-600 dark:text-slate-300 placeholder:text-slate-400"
+                      value={progress.missedTaskReasons?.[dateKey]?.[task.id] || ''}
+                      onChange={e => {
+                        setProgress(prev => ({
                           ...prev,
                           missedTaskReasons: {
-                            ...prev.missedTaskReasons,
-                            [dateKey]: { ...dateReasons, [task.id]: val }
+                            ...(prev.missedTaskReasons || {}),
+                            [dateKey]: {
+                              ...(prev.missedTaskReasons?.[dateKey] || {}),
+                              [task.id]: e.target.value
+                            }
                           }
-                        };
-                      });
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
+                        }));
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
           <textarea
-            className="w-full bg-stone-50 dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-4 text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-purple-500/50 transition-all resize-none shadow-inner"
-            rows={4}
-            placeholder="How did today go? What could be better tomorrow?"
+            className="w-full mt-4 bg-stone-50 dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-4 text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-purple-500/50 transition-all resize-none shadow-inner"
+            rows={3}
+            placeholder="Overall reflections — How did today go?"
             value={progress.eodReviews?.[dateKey] || ''}
             onChange={(e) => {
               setProgress(prev => ({
                 ...prev,
                 eodReviews: {
-                  ...prev.eodReviews,
+                  ...(prev.eodReviews || {}),
                   [dateKey]: e.target.value
                 }
               }));
@@ -590,6 +593,7 @@ const App: React.FC = () => {
       {/* Quick Navigation — each button toggles its section */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6">
         {[
+          { label: '📅 Classes', key: 'classes' },
           { label: '💪 Daily Habits', key: 'DAILY' },
           { label: '🗓 Weekly', key: 'WEEKLY' },
           { label: '🔁 Biweekly', key: 'BIWEEKLY' },
@@ -618,8 +622,8 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* PINNED CLASSES SECTION */}
-      {(() => {
+      {/* CLASSES SECTION */}
+      {activePlannerSection === 'classes' && (() => {
         const classTasks = tasks.filter(t => t.category === TaskCategory.ACADEMICS);
         const startEdit = (t: TaskDefinition) => { setPlannerEditingId(t.id); setPlannerEditTask({ ...t }); };
         const saveEdit = () => {
@@ -752,7 +756,13 @@ const App: React.FC = () => {
     </main>
   );
 
-  const renderStats = () => (
+  const renderStats = () => {
+    const checkins: Array<{id:string;timestamp:string;doing:string;feeling:string;isFree:boolean;suggestion?:string}> = JSON.parse(localStorage.getItem('zenfocus_checkins') || '[]');
+    const recentCheckins = checkins.slice(0, 15);
+    const eodEntries = Object.entries(progress.eodReviews || {}).sort(([a],[b]) => b.localeCompare(a)).slice(0, 10);
+    const missedEntries = Object.entries(progress.missedTaskReasons || {}).sort(([a],[b]) => b.localeCompare(a)).slice(0, 10);
+
+    return (
     <main className="flex-1 overflow-y-auto px-6 pt-12 no-scrollbar pb-32">
       <h1 className="text-3xl font-black mb-1 dark:text-white tracking-tight">Performance</h1>
       <p className="text-slate-400 dark:text-slate-500 mb-8 font-medium text-sm">Your journey tracked in data</p>
@@ -774,92 +784,101 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8 transition-all">
-        <h3 className="font-black text-xl mb-6 dark:text-white tracking-tight">Activity Insights</h3>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">Days Tracked</span>
-            <span className="font-black text-indigo-600 dark:text-indigo-400">{stats.daysTracked} days</span>
-          </div>
-          <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
-            <div
-              className="h-full bg-indigo-500 transition-all duration-1000"
-              style={{ width: `${Math.min(100, stats.daysTracked * 5)}%` }}
-            />
-          </div>
-          <p className="text-sm text-slate-400 dark:text-slate-500 leading-relaxed italic border-l-4 border-indigo-200 dark:border-indigo-800 pl-4 py-1">
-            "The secret of your future is hidden in your daily routine."
-          </p>
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
+        <h3 className="font-black text-lg mb-4 dark:text-white tracking-tight">Activity Insights</h3>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">Days Tracked</span>
+          <span className="font-black text-indigo-600 dark:text-indigo-400">{stats.daysTracked} days</span>
+        </div>
+        <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
+          <div className="h-full bg-indigo-500 transition-all duration-1000" style={{ width: `${Math.min(100, stats.daysTracked * 5)}%` }} />
         </div>
       </div>
 
-      {/* Historical Data Sections */}
-      <div className="space-y-6">
-        
-        {/* Check-ins History */}
-        {checkins && checkins.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm">
-            <h3 className="font-black text-lg mb-4 dark:text-white">Recent Check-ins</h3>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar pr-2">
-              {checkins.slice(0, 20).map((c, i) => (
-                <div key={i} className="p-3 bg-stone-50 dark:bg-slate-900 rounded-2xl">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] uppercase font-black text-indigo-500">{format(new Date(c.timestamp), 'MMM d, h:mm a')}</span>
-                    <span className="text-xs font-bold dark:text-white">{c.feeling}</span>
-                  </div>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">Was Doing: {c.doing}</p>
+      {/* Hourly Check-In History */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <MessageCircle size={16} className="text-indigo-500" />
+          <h3 className="font-black text-lg dark:text-white tracking-tight">Check-In History</h3>
+        </div>
+        {recentCheckins.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">No check-ins recorded yet.</p>
+        ) : (
+          <div className="space-y-3 max-h-64 overflow-y-auto no-scrollbar">
+            {recentCheckins.map((ci) => (
+              <div key={ci.id} className="bg-stone-50 dark:bg-slate-900 rounded-2xl p-3 border border-black/5 dark:border-white/5">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">
+                    {format(new Date(ci.timestamp), 'MMM d · h:mm a')}
+                  </span>
+                  <span className="text-xs">{ci.feeling}</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* EOD Reviews History */}
-        {progress.eodReviews && Object.keys(progress.eodReviews).length > 0 && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm">
-            <h3 className="font-black text-lg mb-4 dark:text-white">End of Day Reviews</h3>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar pr-2">
-              {Object.entries(progress.eodReviews).sort((a,b) => b[0].localeCompare(a[0])).map(([dateStr, text]) => (
-                typeof text === 'string' && text.trim() && (
-                  <div key={`eod-${dateStr}`} className="p-4 bg-stone-50 dark:bg-slate-900 rounded-2xl border-l-4 border-purple-400 dark:border-purple-600">
-                    <span className="block text-[10px] uppercase font-black text-purple-500 mb-1">{dateStr}</span>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">{text}</p>
-                  </div>
-                )
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Missed Tasks Context History */}
-        {progress.missedTaskReasons && Object.keys(progress.missedTaskReasons).length > 0 && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700/50 shadow-sm">
-            <h3 className="font-black text-lg mb-4 dark:text-white">Missed Task Insights</h3>
-            <div className="space-y-4 max-h-[300px] overflow-y-auto no-scrollbar pr-2">
-              {Object.entries(progress.missedTaskReasons).sort((a,b) => b[0].localeCompare(a[0])).map(([dateStr, reasonsObj]) => {
-                const logs = Object.entries(reasonsObj as Record<string, string>).filter(([_, reason]) => typeof reason === 'string' && Boolean(reason.trim()));
-                if (logs.length === 0) return null;
-                return (
-                  <div key={`missed-${dateStr}`} className="p-4 bg-rose-50 dark:bg-rose-900/10 rounded-2xl">
-                    <span className="block text-[10px] uppercase font-black text-rose-500 mb-3 border-b border-rose-200 dark:border-rose-900/50 pb-2">{dateStr}</span>
-                    {logs.map(([taskId, reason]) => {
-                      const taskTitle = tasks.find(t => t.id === taskId)?.title || taskId;
-                      return (
-                        <div key={taskId} className="mb-2 last:mb-0">
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">{taskTitle}</span>
-                          <span className="text-sm text-rose-700 dark:text-rose-300 font-medium italic block">"{reason}"</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{ci.doing || '—'}</p>
+                {ci.suggestion && <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">💡 {ci.suggestion}</p>}
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      {/* EOD Review History */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <FileText size={16} className="text-purple-500" />
+          <h3 className="font-black text-lg dark:text-white tracking-tight">Daily Reviews</h3>
+        </div>
+        {eodEntries.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">No reviews yet.</p>
+        ) : (
+          <div className="space-y-3 max-h-64 overflow-y-auto no-scrollbar">
+            {eodEntries.map(([dk, text]) => (
+              <div key={dk} className="bg-stone-50 dark:bg-slate-900 rounded-2xl p-3 border border-black/5 dark:border-white/5">
+                <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest block mb-1">{dk}</span>
+                <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Missed Task Reasons History */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <ListTodo size={16} className="text-rose-500" />
+          <h3 className="font-black text-lg dark:text-white tracking-tight">Missed Task Reasons</h3>
+        </div>
+        {missedEntries.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">No missed task records yet.</p>
+        ) : (
+          <div className="space-y-3 max-h-64 overflow-y-auto no-scrollbar">
+            {missedEntries.map(([dk, reasons]) => {
+              const entries = Object.entries(reasons).filter(([,v]) => v);
+              if (entries.length === 0) return null;
+              return (
+                <div key={dk} className="bg-stone-50 dark:bg-slate-900 rounded-2xl p-3 border border-black/5 dark:border-white/5">
+                  <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest block mb-2">{dk}</span>
+                  {entries.map(([taskId, reason]) => {
+                    const task = tasks.find(t => t.id === taskId);
+                    return (
+                      <div key={taskId} className="flex items-start gap-2 mb-1.5 last:mb-0">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 shrink-0">{task?.title || taskId}:</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{reason}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <p className="text-sm text-slate-400 dark:text-slate-500 leading-relaxed italic border-l-4 border-indigo-200 dark:border-indigo-800 pl-4 py-1">
+        "The secret of your future is hidden in your daily routine."
+      </p>
     </main>
   );
+  };
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-stone-200 dark:bg-slate-950 transition-colors duration-500 relative overflow-hidden">

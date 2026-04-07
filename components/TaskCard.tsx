@@ -23,13 +23,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isCompleted, onToggle 
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="text-[9px] uppercase font-black tracking-[0.1em] px-2.5 py-1 rounded-full bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 backdrop-blur-sm whitespace-nowrap">
+              <span className="text-[9px] uppercase font-black tracking-[0.1em] px-2.5 py-1 rounded-full bg-white/60 dark:bg-white/15 border border-black/5 dark:border-white/20 backdrop-blur-sm whitespace-nowrap text-slate-700 dark:text-slate-100">
                 {task.category}
               </span>
               {task.time && (
-                <span className="flex items-center gap-1 text-[10px] font-black text-slate-700 dark:text-slate-200 opacity-60 whitespace-nowrap">
+                <span className="flex items-center gap-1 text-[10px] font-black text-slate-600 dark:text-slate-200 whitespace-nowrap">
                   <Clock size={12} className="stroke-[2.5px]" /> {formatTime12Hour(task.time)}
-                  {task.endTime && <span className="opacity-70"> – {formatTime12Hour(task.endTime)}</span>}
+                  {task.endTime && <span className="text-slate-500 dark:text-slate-300">– {formatTime12Hour(task.endTime)}</span>}
                 </span>
               )}
             </div>
@@ -37,14 +37,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isCompleted, onToggle 
               {task.title}
             </h3>
             {task.description && (
-              <p className={`text-[13px] font-medium opacity-70 mt-1 leading-snug dark:text-white/80 ${expanded ? '' : 'line-clamp-2'}`}>
+              <p className={`text-[13px] font-medium opacity-70 mt-1 leading-snug text-slate-800 dark:text-white/80 ${expanded ? '' : 'line-clamp-2'}`}>
                 {task.description}
               </p>
             )}
             {hasLongDesc && (
               <button
                 onClick={e => { e.stopPropagation(); setExpanded(!expanded); }}
-                className="flex items-center gap-1 mt-1.5 text-[10px] font-black opacity-50 hover:opacity-100 transition-opacity"
+                className="flex items-center gap-1 mt-1.5 text-[10px] font-black text-slate-600 dark:text-slate-200 hover:opacity-100 transition-opacity"
               >
                 {expanded ? <><ChevronUp size={12}/> Less</> : <><ChevronDown size={12}/> More</>}
               </button>
